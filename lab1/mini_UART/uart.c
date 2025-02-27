@@ -1,59 +1,57 @@
 #include <stdint.h>
 #include "uart.h"
 
-static void delay(unsigned int clock) {
-    while (clock--) {
-        asm volatile("nop");
-    }
-}
-
 void uart_init(void) {
-    // Enable Mini UART
-    *AUX_ENABLES |= 1;
-    
-    // Disable transmitter and receiver during configuration
-    *AUX_MU_CNTL = 0;
-    
-    // Disable interrupts
-    *AUX_MU_IER = 0;
-    
-    // Set data size to 8 bits
-    *AUX_MU_LCR = 3;
-    
-    // Disable auto flow control
-    *AUX_MU_MCR = 0;
-    
-    // Set baud rate to 115200
-    *AUX_MU_BAUD = 270;
-    
-    // Clear FIFO and enable it
-    *AUX_MU_IIR = 6;
-    
-    // Configure GPIO pins 14 and 15
-    uint32_t selector = *GPFSEL1;
-    selector &= ~((7 << 12) | (7 << 15)); // Clear bits 12-14 (GPIO14) and 15-17 (GPIO15)
-    selector |= (2 << 12) | (2 << 15);    // Set alternate function 5 for both pins
-    *GPFSEL1 = selector;
-    
-    // Disable pull-up/down
+    register unsigned int r;
+
+    // 初始化 GPIO
+    r = *GPFSEL1;
+    r &= ~((7<<12) | (7<<15)); // 清除 GPIO 14, 15 的設定
+    r |= (2<<12) | (2<<15);    // 設定為 ALT5 模式
+    *GPFSEL1 = r;
+
+    // 停用上拉/下拉電阻
     *GPPUD = 0;
-    delay(150);
-    // Set pull-up/down for pins 14 and 15
-    *GPPUDCLK0 = (1 << 14) | (1 << 15);
-    delay(150);
+    for(r=0; r<150; r++) { asm volatile("nop"); }
+    *GPPUDCLK0 = (1<<14) | (1<<15);
+    for(r=0; r<150; r++) { asm volatile("nop"); }
     *GPPUDCLK0 = 0;
-    
+
+    // 初始化 UART
+    *AUX_ENABLES |= 1;    // 啟用 mini UART
+    *AUX_MU_CNTL = 0;     // 停用收發器
+    *AUX_MU_IER = 0;      // 停用中斷
+    *AUX_MU_LCR = 3;      // 8 位元資料模式
+    *AUX_MU_MCR = 0;      // 停用流量控制
+    *AUX_MU_BAUD = 270;   // 設定 115200 鮑率
+    *AUX_MU_IIR = 6;      // 清除並啟用 FIFO
+    *AUX_MU_CNTL = 3;     // 啟用收發器
 }
 
-void uart_send_string(const char *str) {
-    while (*str) {
-        while (!(*AUX_MU_LSR_REG & 0x20)) {} // 等待 UART 可用
-        *AUX_MU_IO_REG = (uint32_t)(*str++);
+void uart_send_char(char c) {
+    while(!(*AUX_MU_LSR & 0x20)); // 等待可以傳送
+    *AUX_MU_IO = c;
+}
+
+char uart_receive_char(void) {
+    while(!(*AUX_MU_LSR & 0x01)); // 等待有資料可讀
+    return *AUX_MU_IO;
+}
+
+void uart_send_string(const char* str) {
+    while(*str) {
+        uart_send_char(*str++);
     }
 }
 
-char uart_receive_char() {
-    while (!(*AUX_MU_LSR_REG & 0x01)) {} // 等待數據準備好
-    char c = (char)(*AUX_MU_IO_REG);
-    return c == '\r' ? '\n' : c;
+void uart_send_hex(unsigned int hex) {
+    char temp[] = "0123456789ABCDEF";
+    char output[9];
+    output[8] = '\0';
+    uart_send_string("0x");
+    for(int i = 7; i >= 0; i--) {
+        output[i] = temp[hex & 0xF];
+        hex >>= 4;
+    }
+    uart_send_string(output);
 }
