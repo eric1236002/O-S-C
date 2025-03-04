@@ -1,19 +1,18 @@
 #include "mailbox.h"
 
 void mailbox_call(unsigned int* message, unsigned int channel){
-    //Combine the message address (upper 28 bits) with channel number (lower 4 bits)
     unsigned int message_addr =  ((unsigned int)((unsigned long)message) & 0xFFFFFFF0) | (channel & 0xF);
-    //Check if Mailbox 0 status register’s full flag is set.
+    //檢查mailbox是否滿
     while((*(volatile unsigned int*)(MAILBOX_STATUS) & MAILBOX_FULL));
-    //If not, then you can write to Mailbox 1 Read/Write register
+    //將 message 地址寫入 Mailbox 0 Read/Write register。
     *(volatile unsigned int*)(MAILBOX_WRITE) = message_addr;
     while(1)
     {
-        //Check if Mailbox 0 status register’s empty flag is set.
+        //確保 Mailbox 為 0 有空間可讀。
         while ((*(volatile unsigned int*)MAILBOX_STATUS) & MAILBOX_EMPTY);
-        //If not, then you can read from Mailbox 0 Read/Write register.
+        //從 Mailbox 0 Read/Write register 讀取。
         unsigned int result = *(volatile unsigned int*)(MAILBOX_READ);
-        //Check if the value is the same as you wrote in step 1
+        //如果低 4-bit（result & 0xF）等於 channel，則結束。
         if((result & 0xf) == channel)
         {
             return;

@@ -2,7 +2,7 @@ CC = aarch64-linux-gnu-gcc
 SC = aarch64-linux-gnu-as
 LD = aarch64-linux-gnu-ld 
 OBJCOPY = aarch64-linux-gnu-objcopy
-CFLAGS = -ffreestanding -O0 -nostdlib -mcpu=cortex-a53 -I./mini_UART -I./mailbox -g
+CFLAGS = -ffreestanding -O0 -nostdlib -mcpu=cortex-a53+nosimd -I./mini_UART -I./mailbox -g
 LDFLAGS = -T linker.ld -nostdlib
 
 all: kernel.img
