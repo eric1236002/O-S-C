@@ -1,28 +1,52 @@
 CC = aarch64-linux-gnu-gcc
-CS = aarch64-linux-gnu-as
+AS = aarch64-linux-gnu-as
 LD = aarch64-linux-gnu-ld
 OBJCOPY = aarch64-linux-gnu-objcopy
-CFLAGS = -Wall -O2 -ffreestanding -nostdlib -nostartfiles
+
+BUILD_DIR = build
+INCLUDE_DIR = include
+SRC_DIR = src
+
+OBJS = $(BUILD_DIR)/boot.o \
+       $(BUILD_DIR)/reboot.o \
+       $(BUILD_DIR)/uart.o \
+       $(BUILD_DIR)/bootloader.o \
+       $(BUILD_DIR)/shell.o \
 
 
-LDFLAGS = -T linker.ld
+CFLAGS = -Wall -O2 -ffreestanding -nostdlib -nostartfiles -I$(INCLUDE_DIR)
+LDFLAGS = -T linker.ld -nostdlib
 
-all: kernel.img
+all: kernel8.img
 
-kernel.elf: reboot.o boot.o uart.o
-	$(LD) $(LDFLAGS) -o kernel.elf reboot.o shell.o uart.o
+kernel8.elf: $(OBJS)
+	$(LD) $(LDFLAGS) -o $@ $(OBJS)
 
-reboot.o: reboot/reboot.c reboot/reboot.h
-	$(CC) $(CFLAGS) -c reboot/reboot.c -o reboot.o
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
+	@mkdir -p $(BUILD_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
 
-boot.o: boot.S
-	$(SC) -c boot.S -o boot.o
 
-uart.o: mini_UART/uart.c mini_UART/uart.h
-	$(CC) $(CFLAGS) -c mini_UART/uart.c -o uart.o
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.S
+	@mkdir -p $(@D)
+	$(AS) -c $< -o $@
 
-kernel.img: kernel.elf
-	$(OBJCOPY) -O binary kernel.elf kernel.img
+
+$(BUILD_DIR)/boot.o: boot.S
+	@mkdir -p $(@D)
+	$(AS) -c $< -o $@
+
+
+kernel8.img: kernel8.elf
+	$(OBJCOPY) -O binary $< $@
 
 clean:
-	rm -f *.o *.img
+	rm -rf $(BUILD_DIR)
+	rm -f kernel8.elf kernel8.img
+
+load: kernel8.img
+	qemu-system-aarch64 -M raspi3b \
+	-kernel kernel8.img \
+	-serial null -serial stdio -display none
+
+.PHONY: all clean load
