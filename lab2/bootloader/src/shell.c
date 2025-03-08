@@ -31,13 +31,10 @@ int main() {
         input_buffer[i] = '\0';
 
         if (strcmp(input_buffer, "help") == 0) {
-            uart_send_string("\n\rhelp    :Show this message\n\rload   :use uart to load kernal\n\rreboot :reboot the system\r");
+            uart_send_string("\n\rhelp    :Show this message\n\rload   :use uart to load kernal\n\r");
         }else if(strcmp(input_buffer, "load")==0){
             uart_send_string("\n\rLoad kernel\r");
             load_kernel();
-        }else if(strcmp(input_buffer, "reboot")==0){
-            uart_send_string("\n\rReboot\r");
-            reset(100);
         }else {
             uart_send_string("\n\rInvalid command\r");
         }

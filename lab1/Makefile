@@ -5,10 +5,10 @@ OBJCOPY = aarch64-linux-gnu-objcopy
 CFLAGS = -ffreestanding -O0 -nostdlib -mcpu=cortex-a53+nosimd -I./mini_UART -I./mailbox -g
 LDFLAGS = -T linker.ld -nostdlib
 
-all: kernel.img
+all: kernel8.img
 
-kernel.elf: shell.o boot.o uart.o mailbox.o
-	$(LD) $(LDFLAGS) -o kernel.elf boot.o shell.o uart.o mailbox.o
+kernel8.elf: shell.o boot.o uart.o mailbox.o
+	$(LD) $(LDFLAGS) -o kernel8.elf boot.o shell.o uart.o mailbox.o
 
 shell.o: shell.c shell.h
 	$(CC) $(CFLAGS) -c shell.c -o shell.o
@@ -22,13 +22,13 @@ mailbox.o: mailbox/mailbox.c mailbox/mailbox.h
 boot.o: boot.S
 	$(SC) -c boot.S -o boot.o
 
-kernel.img: kernel.elf
-	$(OBJCOPY) -O binary kernel.elf kernel.img
+kernel8.img: kernel8.elf
+	$(OBJCOPY) -O binary kernel8.elf kernel8.img
 
 clean:
 	rm -f *.o *.elf *.img
 
-load: kernel.img	
+load: kernel8.img	
 	qemu-system-aarch64 -M raspi3b \
-	-kernel kernel.img \
+	-kernel8 kernel8.img \
 	-serial null -serial stdio -display none

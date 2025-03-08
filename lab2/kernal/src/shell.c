@@ -11,8 +11,8 @@ int strcmp(const char *str1, const char *str2) {
 }
 
 int main() {
-    uart_init(); 
-    uart_send_string("Bootloader\n");
+    // uart_init(); 
+    uart_send_string("Hello, world!\n");
     while (1) { 
         int i = 0;
         uart_send_string("\n# ");
@@ -31,13 +31,13 @@ int main() {
         input_buffer[i] = '\0';
 
         if (strcmp(input_buffer, "help") == 0) {
-            uart_send_string("\n\rhelp    :Show this message\n\rload   :use uart to load kernal\n\rreboot :reboot the system\r");
-        }else if(strcmp(input_buffer, "load")==0){
-            uart_send_string("\n\rLoad kernel\r");
-            load_kernel();
+            uart_send_string("\n\rhelp    :Show this message\n\rreboot :reboot the system\r\nls    :list the files in the current directory\r");
         }else if(strcmp(input_buffer, "reboot")==0){
             uart_send_string("\n\rReboot\r");
             reset(100);
+        }else if(strcmp(input_buffer, "ls")==0) {
+            uart_send_string("\n\rListing files:\r");
+            // list_files();
         }else {
             uart_send_string("\n\rInvalid command\r");
         }

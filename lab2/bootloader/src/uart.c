@@ -35,7 +35,7 @@ void uart_send_char(char c) {
 
 char uart_receive_char(void) {
     while(!(*AUX_MU_LSR & 0x01)); // wait until can receive
-    char c = (char)(*AUX_MU_IO);
+    char c = *(AUX_MU_IO)&0xFF;
     return c;
 }
 

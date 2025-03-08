@@ -10,7 +10,6 @@ SRC_DIR = src
 OBJS = $(BUILD_DIR)/boot.o \
        $(BUILD_DIR)/reboot.o \
        $(BUILD_DIR)/uart.o \
-       $(BUILD_DIR)/bootloader.o \
        $(BUILD_DIR)/shell.o \
 
 

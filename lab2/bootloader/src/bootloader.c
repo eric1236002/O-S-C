@@ -27,7 +27,7 @@ void load_kernel() {
 void receive_kernel(int size) {
     char *kernel = (char *)KERNEL_ADDR; 
     int timeout_count = 0;
-    const int TIMEOUT_MAX = 5000000;//大約3秒
+    const int TIMEOUT_MAX = 10000000;//大約3秒
     
     uart_send_string("\n\rstart to receive kernel\n");
     
