@@ -3,8 +3,8 @@
 
 #include <string.h>
 #include "./uart.h" 
-
-#define KERNEL_ADDR 0x80000
+#include "./reboot.h"
+#define KERNEL_ADDR 0x60000
 #define bootloader 0x10000
 
 

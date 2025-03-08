@@ -26,12 +26,9 @@ def send(args):
                     header = struct.pack('<I', size)
                     ser.write(header)
                     ser.flush() # wait for all data to be sent
-                    
                     print("\n header send !")
-                    ser.write(kernel_data)
-                    ser.flush() # wait for all data to be sent
-                    
-                    
+                    while size > 0:
+                        size -= ser.write(kernel_data)
                     print("\n kernal send !")
 
                 except Exception as e:
