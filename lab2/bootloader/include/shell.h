@@ -3,7 +3,7 @@
 
 #include "uart.h"
 #include "reboot.h"
-#include "bootloader.h"
+#include "loader.h"
 #define MAX_INPUT_LEN 100
 extern char input_buffer[MAX_INPUT_LEN];
 

@@ -10,16 +10,16 @@ SRC_DIR = src
 OBJS = $(BUILD_DIR)/boot.o \
        $(BUILD_DIR)/reboot.o \
        $(BUILD_DIR)/uart.o \
-       $(BUILD_DIR)/bootloader.o \
+       $(BUILD_DIR)/loader.o \
        $(BUILD_DIR)/shell.o \
 
 
 CFLAGS = -Wall -O2 -ffreestanding -nostdlib -nostartfiles -I$(INCLUDE_DIR)
 LDFLAGS = -T linker.ld -nostdlib
 
-all: kernel8.img
+all: bootloader.img
 
-kernel8.elf: $(OBJS)
+bootloader.elf: $(OBJS)
 	$(LD) $(LDFLAGS) -o $@ $(OBJS)
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
@@ -37,16 +37,16 @@ $(BUILD_DIR)/boot.o: boot.S
 	$(AS) -c $< -o $@
 
 
-kernel8.img: kernel8.elf
+bootloader.img: bootloader.elf
 	$(OBJCOPY) -O binary $< $@
 
 clean:
 	rm -rf $(BUILD_DIR)
-	rm -f kernel8.elf kernel8.img
+	rm -f bootloader.elf bootloader.img
 
-load: kernel8.img
+load: bootloader.img
 	qemu-system-aarch64 -M raspi3b \
-    -kernel kernel8.img \
+    -kernel bootloader.img \
     -serial null -serial pty \
     -display none \
 
