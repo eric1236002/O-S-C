@@ -12,7 +12,8 @@ OBJS = $(BUILD_DIR)/boot.o \
 		$(BUILD_DIR)/uart.o \
 		$(BUILD_DIR)/shell.o \
 		$(BUILD_DIR)/cpio.o \
-		$(BUILD_DIR)/utils.o 
+		$(BUILD_DIR)/utils.o \
+		$(BUILD_DIR)/allocator.o
 
 
 CFLAGS = -Wall -O2 -ffreestanding -nostdlib -nostartfiles -I$(INCLUDE_DIR)
@@ -48,7 +49,7 @@ clean:
 load: kernel8.img
 	qemu-system-aarch64 -M raspi3b \
     -kernel kernel8.img \
-    -device loader,file=../initramfs.cpio,addr=0x20000000 \
+    -device loader,file=../bootloader/initramfs.cpio,addr=0x20000000 \
     -serial null -serial stdio \
     -display none \
 

@@ -50,7 +50,22 @@ Memory Map:
 +----------------+ 0x80000
 |    KERNEL      |  <-- Kernel code and data
 |                |
-+----------------+
++----------------+ heap_start
+|    HEAP        |  <-- Dynamic memory allocation
+|                |
++----------------+ heap_end
+```
+
+## Memory Management
+
+### Dynamic Memory Allocation
+- Simple heap allocator implementation
+- Supports basic malloc operations
+- Memory aligned to 8 bytes
+- Heap starts after kernel code and data
+- No free implementation (simple bump allocator)
+
+
 ```
 
 ## Building and Testing
@@ -150,6 +165,8 @@ reboot  - Reboot system
 - Memory-mapped CPIO archive at 0x20000000
 - Supports file names up to 100 characters
 - 4-byte alignment for both header and data
+- Simple bump allocator for dynamic memory
+- 8-byte memory alignment for allocations
 
 ## Error Handling
 
@@ -159,6 +176,15 @@ reboot  - Reboot system
 - Provides feedback for file not found
 
 ## Debug
+
+### Memory Debugging
+To check heap usage:
+```c
+// Print current heap top
+uart_send_string("Heap top: ");
+uart_send_hex((unsigned long)heap_top);
+uart_send_string("\n\r");
+```
 
 ```bash
 hexdump -C ../initramfs.cpio | head -n 30

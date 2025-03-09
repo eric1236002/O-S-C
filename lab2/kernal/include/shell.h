@@ -5,5 +5,7 @@
 #include "reboot.h"
 #include "utils.h"
 #include "cpio.h"
+#include "allocator.h"
+
 
 #endif

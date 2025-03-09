@@ -48,3 +48,17 @@ void input_string(char *input_buffer) {
     }
     input_buffer[i] = '\0';
 }
+
+unsigned int input_int(char *input_buffer) {
+    input_string(input_buffer);
+    return my_atoi(input_buffer);
+}
+
+unsigned int my_atoi(const char *str) {
+    unsigned int result = 0;
+    while (*str) {
+        result = result * 10 + (*str - '0');
+        str++;
+    }
+    return result;
+}
