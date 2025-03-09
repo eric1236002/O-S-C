@@ -12,9 +12,12 @@ This project implements a simple CPIO file system reader for Raspberry Pi 3, all
 ## Prerequisites
 
 - aarch64-linux-gnu toolchain
-- QEMU for ARM emulation
+- QEMU for ARM emulation (for testing)
 - WSL or Linux environment
 - make utility
+- SD card with at least 32MB
+- Raspberry Pi 3
+- USB to TTL Serial Cable
 
 ## Directory Structure
 
@@ -50,8 +53,9 @@ Memory Map:
 +----------------+
 ```
 
-## Building and Running
+## Building and Testing
 
+### 1. QEMU Testing
 1. Create CPIO archive:
 ```bash
 cd rootfs
@@ -69,6 +73,62 @@ make
 3. Run in QEMU:
 ```bash
 make load
+```
+
+### 2. Raspberry Pi Testing
+
+1. Prepare Files:
+   First, create the CPIO archive and build the kernel:
+```bash
+# Create CPIO archive from rootfs
+cd rootfs
+find . -print0 | cpio --null -ov --format=newc > ../initramfs.cpio
+cd ..
+
+# Build kernel
+cd kernal
+make clean && make
+```
+
+2. Prepare SD Card:
+   - Create `config.txt` in the root directory with following content:
+```
+kernel_address=0x60000
+kernel=bootloader.img
+arm_64bit=1
+initramfs initrd.cpio.gz followkernel
+initramfs initramfs.cpio 0x20000000
+```
+
+3. Copy Required Files to SD Card:
+   You only need to copy these two files to the SD card root:
+```bash
+# Copy kernel and CPIO archive to SD card
+cp kernal/kernel8.img /path/to/sd/
+cp initramfs.cpio /path/to/sd/
+```
+
+3. Setup Serial Connection:
+```bash
+# Linux/WSL (replace ttyUSB0 with your device)
+sudo minicom -D /dev/ttyUSB0 -b 115200
+
+# Windows (replace COM3 with your device)
+# Use PuTTY or other terminal emulator
+# Speed: 115200
+# Data bits: 8
+# Stop bits: 1
+# Parity: None
+# Flow control: None
+```
+
+4. Power on Raspberry Pi and test commands:
+```
+# Basic commands
+help    - Show available commands
+ls      - List files
+cat     - Read file content
+reboot  - Reboot system
 ```
 
 ## Shell Commands
@@ -115,7 +175,7 @@ Can use hexdump to check the CPIO archive, so we can see the file name and file 
 00000070  30 37 30 37 30 31 30 30  31 35 46 44 38 31 30 30  |0707010015FD8100|
 00000080  30 30 38 31 46 46 30 30  30 30 30 33 45 38 30 30  |0081FF000003E800|
 00000090  30 30 30 33 45 38 30 30  30 30 30 30 30 31 36 37  |0003E80000000167|
-000000a0  43 44 30 46 32 35 30 30  30 30 30 30 31 39 30 30  |CD0F250000001900|
+000000a0  43 44 35 35 37 36 30 30  30 30 30 30 31 39 30 30  |CD55760000001900|
 000000b0  30 30 30 30 30 30 30 30  30 30 30 30 35 34 30 30  |0000000000005400|
 000000c0  30 30 30 30 30 30 30 30  30 30 30 30 30 30 30 30  |0000000000000000|
 000000d0  30 30 30 30 30 38 30 30  30 30 30 30 30 30 6f 6e  |00000800000000on|
@@ -124,14 +184,15 @@ Can use hexdump to check the CPIO archive, so we can see the file name and file 
 00000100  65 00 00 00 30 37 30 37  30 31 30 30 31 35 46 43  |e...0707010015FC|
 00000110  43 38 30 30 30 30 38 31  46 46 30 30 30 30 30 33  |C8000081FF000003|
 00000120  45 38 30 30 30 30 30 33  45 38 30 30 30 30 30 30  |E8000003E8000000|
-00000130  30 31 36 37 43 44 30 46  33 45 30 30 30 30 30 30  |0167CD0F3E000000|
-00000140  30 45 30 30 30 30 30 30  30 30 30 30 30 30 30 30  |0E00000000000000|
+00000130  30 31 36 37 43 44 35 35  37 38 30 30 30 30 30 31  |0167CD5578000001|
+00000140  45 32 30 30 30 30 30 30  30 30 30 30 30 30 30 30  |E200000000000000|
 00000150  35 34 30 30 30 30 30 30  30 30 30 30 30 30 30 30  |5400000000000000|
 00000160  30 30 30 30 30 30 30 30  30 38 30 30 30 30 30 30  |0000000008000000|
-00000170  30 30 74 77 6f 2e 74 78  74 00 00 00 73 65 63 6f  |00two.txt...seco|
-00000180  6e 64 73 20 66 69 6c 65  0d 0a 00 00 30 37 30 37  |nds file....0707|
-00000190  30 31 30 30 30 30 30 30  30 30 30 30 30 30 30 30  |0100000000000000|
-000001a0  30 30 30 30 30 30 30 30  30 30 30 30 30 30 30 30  |0000000000000000|
-000001b0  30 30 30 30 30 30 30 30  30 31 30 30 30 30 30 30  |0000000001000000|
-000001c0  30 30 30 30 30 30 30 30  30 30 30 30 30 30 30 30  |0000000000000000|
+00000170  30 30 74 77 6f 2e 74 78  74 00 00 00 20 20 20 20  |00two.txt...    |
+00000180  2c 6f 38 38 38 38 38 38  6f 2e 20 20 20 20 20 20  |,o888888o.      |
+00000190  20 20 64 38 38 38 38 38  38 6f 2e 20 20 20 20 20  |  d888888o.     |
+000001a0  20 20 2c 6f 38 38 38 38  38 38 6f 2e 0d 0a 20 2e  |  ,o888888o... .|
+000001b0  20 38 38 38 38 20 20 20  20 20 60 38 38 2e 20 20  | 8888     `88.  |
+000001c0  20 20 2e 60 38 38 38 38  3a 27 20 60 38 38 2e 20  |  .`8888:' `88. |
+000001d0  20 20 20 38 38 38 38 20  20 20 20 20 60 38 38 2e  |   8888     `88.|
 ```
