@@ -30,6 +30,7 @@ void uart_send_char(char c);
 char uart_receive_char(void);
 void uart_send_string(const char* str);
 void uart_send_hex(unsigned int hex);
+void uart_send_hex64(unsigned long hex);
 void uart_send_int(int number);
 int uart_read_int();
 int uart_is_readable();

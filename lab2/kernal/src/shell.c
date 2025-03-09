@@ -34,7 +34,7 @@ int main() {
             uart_send_string("\n\r");
             void* ptr = simple_alloc(size);
             uart_send_string("Allocated memory at: ");
-            uart_send_hex((unsigned int)ptr);
+            uart_send_hex64((unsigned long)ptr);
             uart_send_string("\n\r");
         } else {
             uart_send_string("\n\rInvalid command\n\r");

@@ -58,6 +58,17 @@ void uart_send_hex(unsigned int hex) {
     uart_send_string(output);
 }
 
+void uart_send_hex64(unsigned long hex) {
+    uart_send_string("0x");
+    for(int i = 60; i >= 0; i -= 4) {
+        unsigned int digit = (hex >> i) & 0xF;
+        if(digit < 10)
+            uart_send_char('0' + digit);
+        else
+            uart_send_char('A' + digit - 10);
+    }
+}
+
 int uart_read_int(void) {
     int num=0;
     char c;
