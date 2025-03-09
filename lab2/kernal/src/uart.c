@@ -87,8 +87,6 @@ void uart_send_int(int number) {
     for (int j = i - 1; j >= 0; j--) {
         uart_send_char(output[j]);
     }
-    uart_send_char('\n');
-    uart_send_char('\r');    
 }
 
 int uart_is_readable() {

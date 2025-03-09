@@ -1,0 +1,84 @@
+
+# Raspberry Pi Bootloader
+
+A simple bootloader for Raspberry Pi that loads a kernel image via UART.
+
+## Overview
+
+This bootloader is designed to load a kernel image into memory via UART communication and execute it. It features:
+
+- Two-stage loading process
+- UART communication at 9600 baud
+- Memory-safe loading with separate bootloader and kernel regions
+- Progress indicators and error handling
+
+## Memory Layout
+```
+Memory Map:
++----------------+ 0x00000
+|                |
+|                |
++----------------+ 0x60000
+|  BOOTLOADER    |  <-- Bootloader code and data
+|  Code & Data   |
++----------------+
+|                |
+|                |
++----------------+ 0x80000
+|    KERNEL      |  <-- Kernel loading address
+|  Code & Data   |
++----------------+
+|                |
+|                |
++----------------+ 0x400000
+|   Stack (SP)   |
++----------------+
+```
+## Components
+
+### 1. Bootloader
+- Located at 0x60000
+- Handles UART initialization
+- Receives kernel size and data
+- Loads kernel to 0x80000
+- Provides progress feedback
+
+### 2. UART Communication
+- Baud Rate: 9600
+- 8 data bits, no parity, 1 stop bit
+- Hardware Flow Control: Disabled
+- Uses BCM2835 Mini UART
+
+### 3. Kernel Loading
+- Maximum kernel size supported: Unlimited
+- Loading address: 0x80000
+- Chunk-based loading for stability
+- Timeout handling and retries
+
+## Building
+
+```bash
+# Build bootloader
+cd bootloader
+make clean
+make
+
+# Build kernel
+cd ../kernel
+make clean
+make
+```
+
+## Usage
+
+1. Flash the bootloader to the Raspberry Pi
+2. Connect UART:
+   - TX (GPIO14)
+   - RX (GPIO15)
+   - GND
+
+3. Send kernel using provided Python script:
+```bash
+python send.py --port <UART_PORT> --kernel-path kernel8.img
+```
+

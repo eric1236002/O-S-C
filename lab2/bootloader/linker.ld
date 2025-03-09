@@ -1,6 +1,6 @@
 SECTIONS
 {
-    . = 0x10000;
+    . = 0x60000;
     .text.boot : { *(.text.boot) }
     .text : { *(.text) }
     .rodata : { *(.rodata) }

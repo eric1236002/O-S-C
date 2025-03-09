@@ -8,9 +8,11 @@ INCLUDE_DIR = include
 SRC_DIR = src
 
 OBJS = $(BUILD_DIR)/boot.o \
-       $(BUILD_DIR)/reboot.o \
-       $(BUILD_DIR)/uart.o \
-       $(BUILD_DIR)/shell.o \
+		$(BUILD_DIR)/reboot.o \
+		$(BUILD_DIR)/uart.o \
+		$(BUILD_DIR)/shell.o \
+		$(BUILD_DIR)/cpio.o \
+		$(BUILD_DIR)/utils.o 
 
 
 CFLAGS = -Wall -O2 -ffreestanding -nostdlib -nostartfiles -I$(INCLUDE_DIR)
@@ -46,7 +48,8 @@ clean:
 load: kernel8.img
 	qemu-system-aarch64 -M raspi3b \
     -kernel kernel8.img \
-    -serial null -serial pty \
+    -device loader,file=../initramfs.cpio,addr=0x20000000 \
+    -serial null -serial stdio \
     -display none \
 
 .PHONY: all clean load

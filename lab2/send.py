@@ -22,7 +22,7 @@ def send(args):
                     ser.reset_input_buffer()
                     ser.reset_output_buffer()
                     
-                    # 等待bootloader準備好
+                    # wait for bootloader to be ready
                     print("Waiting for bootloader to be ready...")
                     time.sleep(1)
                     
@@ -33,11 +33,11 @@ def send(args):
                     ser.flush() # wait for all data to be sent
                     
                     print("Header sent, waiting before sending kernel data...")
-                    time.sleep(0.5)  # 在發送頭和數據之間添加短暫延遲
+                    time.sleep(0.5)  # add a short delay between header and data
                     
-                    # 分批發送數據以避免緩衝區溢出
+                    # send data in chunks to avoid buffer overflow
                     print("Sending kernel data...")
-                    chunk_size = 256  # 每次發送256字節
+                    chunk_size = 256  # send 256 bytes each time
                     sent = 0
                     
                     for i in range(0, len(kernel_data), chunk_size):
@@ -46,12 +46,12 @@ def send(args):
                         ser.flush()
                         sent += len(chunk)
                         print(f"Sent {sent}/{size} bytes", end="\r")
-                        time.sleep(0.01)  # 每個數據包之間添加小延遲
+                        time.sleep(0.01)  # add a small delay between each packet
                     
                     print("\nKernel data sent! Waiting for confirmation...")
-                    time.sleep(2)  # 等待bootloader處理完數據
+                    time.sleep(2)  # wait for bootloader to process data
                     
-                    # 輸出接收到的響應
+                    # output the response from bootloader
                     if ser.in_waiting:
                         response = ser.read(ser.in_waiting).decode(errors='ignore')
                         print(f"Response from bootloader: {response}")

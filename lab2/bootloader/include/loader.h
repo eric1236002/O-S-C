@@ -5,7 +5,7 @@
 #include "./uart.h" 
 #include "./reboot.h"
 #define KERNEL_ADDR 0x80000
-#define bootloader 0x10000
+#define bootloader 0x60000
 
 
 
