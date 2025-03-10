@@ -37,8 +37,8 @@ void receive_kernel(int size) {
             timeout_count++;
         }
         if(timeout_count >= TIMEOUT_MAX) {
-            uart_send_string("\n\rReceive timeout!\r");
-            reset(100);
+            // uart_send_string("\n\rReceive timeout!\r");
+            // reset(100);
             return;
         }
         kernel[i] = uart_receive_char();
