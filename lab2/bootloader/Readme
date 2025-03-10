@@ -1,16 +1,17 @@
-
 # Raspberry Pi Bootloader
 
 A simple bootloader for Raspberry Pi that loads a kernel image via UART.
 
 ## Overview
 
-This bootloader is designed to load a kernel image into memory via UART communication and execute it. It features:
+This bootloader is designed to load a kernel image into memory via UART communication and execute it. Key features:
 
 - Two-stage loading process
-- UART communication at 9600 baud
-- Memory-safe loading with separate bootloader and kernel regions
+- UART communication (115200 baud rate)
+- Memory-safe loading mechanism
 - Progress indicators and error handling
+- Relocation support
+- Built-in simple shell interface
 
 ## Memory Layout
 ```
@@ -19,7 +20,7 @@ Memory Map:
 |                |
 |                |
 +----------------+ 0x60000
-|  BOOTLOADER    |  <-- Bootloader code and data
+|  BOOTLOADER    |  <-- Bootloader code and data come from 0x60000
 |  Code & Data   |
 +----------------+
 |                |
@@ -34,51 +35,92 @@ Memory Map:
 |   Stack (SP)   |
 +----------------+
 ```
-## Components
 
-### 1. Bootloader
-- Located at 0x60000
-- Handles UART initialization
-- Receives kernel size and data
-- Loads kernel to 0x80000
-- Provides progress feedback
+## Core Components
 
-### 2. UART Communication
-- Baud Rate: 9600
-- 8 data bits, no parity, 1 stop bit
-- Hardware Flow Control: Disabled
-- Uses BCM2835 Mini UART
+### 1. Boot Process (boot.S)
+- System initialization implementation
+- CPU core selection handling
+- Bootloader relocation execution
+- Stack pointer setup
+- BSS section initialization
 
-### 3. Kernel Loading
-- Maximum kernel size supported: Unlimited
-- Loading address: 0x80000
-- Chunk-based loading for stability
-- Timeout handling and retries
+### 2. UART Communication (uart.c)
+- Based on BCM2835 Mini UART
+- Configuration: 115200 baud rate, 8 data bits, no parity, 1 stop bit
+- Basic I/O operation support
+- Interrupt handling implementation
 
-## Building
+### 3. Loader (loader.c)
+- Kernel reception and loading management
+- Chunk-based loading support
+- Timeout handling and retry mechanisms
+- Kernel loading address: 0x80000
+
+### 4. Shell Interface (shell.c)
+- Basic command-line interface
+- System command support
+- Debugging and operation utilities
+
+### 5. System Control (reboot.c)
+- System reboot functionality
+- Power management support
+
+## Build Instructions
 
 ```bash
-# Build bootloader
+# Clean and build bootloader
 cd bootloader
 make clean
 make
 
-# Build kernel
+# Build kernel (if needed)
 cd ../kernel
 make clean
 make
 ```
 
-## Usage
+## Hardware Connection
 
-1. Flash the bootloader to the Raspberry Pi
-2. Connect UART:
-   - TX (GPIO14)
-   - RX (GPIO15)
-   - GND
+UART Connection Setup:
+- TX: GPIO14 (Pin 8)
+- RX: GPIO15 (Pin 10)
+- GND: Ground Pin
 
-3. Send kernel using provided Python script:
+## Debugging Guide
+
+### QEMU Simulation
 ```bash
-python send.py --port <UART_PORT> --kernel-path kernel8.img
+make load
 ```
+
+### GDB Debugging
+In first terminal:
+```bash
+make debug
+```
+
+In second terminal:
+```bash
+cd /mnt/d/Cloud/O-S-C/lab2/bootloader
+gdb-multiarch -x debug.gdb
+```
+
+## Project Structure
+
+```
+bootloader/
+├── boot.S          # Boot code
+├── linker.ld       # Linker script
+├── Makefile        # Build configuration
+├── debug.gdb       # GDB debug script
+├── src/
+│   ├── loader.c    # Kernel loader
+│   ├── shell.c     # Command interface
+│   ├── uart.c      # UART driver
+│   └── reboot.c    # System reboot
+└── include/        # Header files
+
+```
+
 

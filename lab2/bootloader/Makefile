@@ -14,7 +14,7 @@ OBJS = $(BUILD_DIR)/boot.o \
        $(BUILD_DIR)/shell.o \
 
 
-CFLAGS = -Wall -O2 -ffreestanding -nostdlib -nostartfiles -I$(INCLUDE_DIR)
+CFLAGS = -Wall -O0 -ffreestanding -nostdlib -nostartfiles -I$(INCLUDE_DIR) -g
 LDFLAGS = -T linker.ld -nostdlib
 
 all: bootloader.img
@@ -50,4 +50,20 @@ load: bootloader.img
     -serial null -serial pty \
     -display none \
 
-.PHONY: all clean load
+debug: bootloader.img
+	qemu-system-aarch64 -M raspi3b \
+    -kernel bootloader.img \
+    -s -S \
+    -display none \
+    -nographic
+
+# 在WSL終端1:
+# cd /mnt/d/Cloud/O-S-C/lab2/bootloader && make clean && make
+
+# 在WSL終端1:
+# cd /mnt/d/Cloud/O-S-C/lab2/bootloader && make debug
+
+# 在WSL終端2:
+# cd /mnt/d/Cloud/O-S-C/lab2/bootloader && gdb-multiarch -x debug.gdb
+
+.PHONY: all clean load debug

@@ -69,7 +69,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Send kernel image to Raspberry Pi')
     parser.add_argument('--port', '-p', type=str, 
                        help="port (Windows: COM1, Linux: /dev/ttyUSB0)", 
-                       default="/dev/pts/0")
+                       default="/dev/ttyUSB0")
     parser.add_argument('--baudrate', '-b', type=int, 
                        help="baudrate", 
                        default=115200)

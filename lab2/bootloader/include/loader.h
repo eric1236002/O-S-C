@@ -5,7 +5,8 @@
 #include "./uart.h" 
 #include "./reboot.h"
 #define KERNEL_ADDR 0x80000
-#define bootloader 0x60000
+#define BOOTLOADER_RELOC_ADDR 0x60000 //define the address of bootloader
+#define BOOTLOADER_SIZE 0x2000  // 64KB
 
 
 
