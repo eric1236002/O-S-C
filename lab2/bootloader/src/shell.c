@@ -2,17 +2,9 @@
 
 char input_buffer[MAX_INPUT_LEN];
 
-int strcmp(const char *str1, const char *str2) {
-    while (*str1 && (*str1 == *str2)) {
-        str1++;
-        str2++;
-    }
-    return *(const unsigned char*)str1 - *(const unsigned char*)str2;
-}
 
 int main() {
     uart_init(); 
-    uart_send_string("Bootloader\n");
     while (1) { 
         int i = 0;
         uart_send_string("\n# ");
@@ -33,6 +25,11 @@ int main() {
         if (strcmp(input_buffer, "help") == 0) {
             uart_send_string("\n\rhelp    :Show this message\n\rload   :use uart to load kernal\n\r");
         }else if(strcmp(input_buffer, "load")==0){
+            fdt_traverse(dtb_addr, initramfs_callback);
+            uart_send_string("\r\ndtb_addr: ");
+            uart_send_hex((unsigned long)dtb_addr);
+            uart_send_string("\n\r");
+            uart_send_string("Bootloader\n");
             uart_send_string("\n\rLoad kernel\r");
             load_kernel();
         }else {

@@ -1,0 +1,39 @@
+# 設置架構
+set architecture aarch64
+set gnutarget elf64-littleaarch64
+
+# 加載符號
+file kernel8.elf
+
+# 連接到 QEMU
+target remote localhost:1234
+
+# 設置常用斷點
+break fdt_traverse
+commands
+    printf "In fdt_traverse\n"
+    continue
+end
+
+break initramfs_callback
+commands
+    printf "In initramfs_callback\n"
+    printf "node_name: "
+    x/s node_name
+    printf "property_name: "
+    x/s property_name
+    printf "property_value: "
+    x/wx property_value
+    continue
+end
+
+# 設置調試輸出
+set print pretty on
+set print array on
+set print array-indexes on
+
+# 顯示即將執行的指令
+display/i $pc
+
+# 開始執行
+continue 

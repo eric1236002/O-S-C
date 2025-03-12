@@ -3,10 +3,25 @@
 char input_buffer[MAX_INPUT_LEN];
 char filename_buffer[MAX_INPUT_LEN];
 char size_str[MAX_INPUT_LEN];
+
 int main() {
     // uart_init(); 
-    uart_send_string("Hello, world!\n");
+    uart_send_string("\n\rHello, world!");
     init_allocator();
+    uart_send_string("\n\rdtb_addr: ");
+    uart_send_hex((unsigned long)dtb_addr);
+    uart_send_string("\n");
+
+    // 檢查 DTB 頭部的前幾個字節
+    uart_send_string("\n\rDTB header bytes: ");
+    unsigned char* dtb_bytes = (unsigned char*)dtb_addr;
+    for (int i = 0; i < 16; i++) {
+        uart_send_hex(dtb_bytes[i]);
+        uart_send_string(" ");
+    }
+    uart_send_string("\n");
+
+    fdt_traverse(dtb_addr,initramfs_callback);
     while (1) { 
         uart_send_string("\n# ");
 

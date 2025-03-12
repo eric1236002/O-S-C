@@ -13,10 +13,11 @@ OBJS = $(BUILD_DIR)/boot.o \
 		$(BUILD_DIR)/shell.o \
 		$(BUILD_DIR)/cpio.o \
 		$(BUILD_DIR)/utils.o \
-		$(BUILD_DIR)/allocator.o
+		$(BUILD_DIR)/allocator.o \
+		$(BUILD_DIR)/fdt.o
 
 
-CFLAGS = -Wall -O2 -ffreestanding -nostdlib -nostartfiles -I$(INCLUDE_DIR)
+CFLAGS = -Wall -O0 -g -ffreestanding -nostdlib -nostartfiles -I$(INCLUDE_DIR)
 LDFLAGS = -T linker.ld -nostdlib
 
 all: kernel8.img
@@ -47,10 +48,20 @@ clean:
 	rm -f kernel8.elf kernel8.img
 
 load: kernel8.img
-	qemu-system-aarch64 -M raspi3b \
+	qemu-system-aarch64 -M raspi3b -m 1G \
     -kernel kernel8.img \
-    -device loader,file=../bootloader/initramfs.cpio,addr=0x20000000 \
+    -initrd ../initramfs.cpio \
+	-dtb ../bcm2710-rpi-3-b-plus.dtb \
+    -serial null -serial stdio \
+    -display none
+
+debug: kernel8.img
+	qemu-system-aarch64 -M raspi3b -m 1G \
+    -kernel kernel8.img \
+    -initrd ../initramfs.cpio \
+	-dtb ../bcm2710-rpi-3-b-plus.dtb \
     -serial null -serial stdio \
     -display none \
+    -S -s
 
-.PHONY: all clean load
+.PHONY: all clean load debug

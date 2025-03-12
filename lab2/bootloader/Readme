@@ -89,9 +89,14 @@ UART Connection Setup:
 
 ## Debugging Guide
 
+In first terminal:
 ### QEMU Simulation
 ```bash
 make load
+```
+In second terminal:
+```bash
+sudo minicom -D /dev/pts/x -b 115200
 ```
 
 ### GDB Debugging

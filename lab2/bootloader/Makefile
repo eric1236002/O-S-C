@@ -12,6 +12,8 @@ OBJS = $(BUILD_DIR)/boot.o \
        $(BUILD_DIR)/uart.o \
        $(BUILD_DIR)/loader.o \
        $(BUILD_DIR)/shell.o \
+       $(BUILD_DIR)/fdt.o \
+       $(BUILD_DIR)/utils.o
 
 
 CFLAGS = -Wall -O0 -ffreestanding -nostdlib -nostartfiles -I$(INCLUDE_DIR) -g
@@ -47,16 +49,19 @@ clean:
 load: bootloader.img
 	qemu-system-aarch64 -M raspi3b \
     -kernel bootloader.img \
+    -dtb ../bcm2710-rpi-3-b-plus.dtb \
+    -initrd ../initramfs.cpio \
     -serial null -serial pty \
     -display none \
 
 debug: bootloader.img
 	qemu-system-aarch64 -M raspi3b \
     -kernel bootloader.img \
-    -s -S \
+    -dtb ../bcm2710-rpi-3-b-plus.dtb \
+    -initrd ../initramfs.cpio \
+    -serial null -serial pty \
     -display none \
-    -nographic
-
+    -S -s
 # 在WSL終端1:
 # cd /mnt/d/Cloud/O-S-C/lab2/bootloader && make clean && make
 
