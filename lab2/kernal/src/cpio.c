@@ -1,7 +1,7 @@
 #include "cpio.h"
 
-unsigned long initramfs_start;
-void cpio_ls(void) {
+
+void cpio_ls(unsigned long initramfs_start) {
     uart_send_string("\n\rListing files:\n");
     char *initrd_addr = (char *)initramfs_start;
 
@@ -52,7 +52,7 @@ void cpio_ls(void) {
 }
 
 
-void cpio_cat(char *filename) {
+void cpio_cat(char *filename,unsigned long initramfs_start) {
     char *initrd_addr = (char *)initramfs_start;
 
     

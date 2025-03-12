@@ -26,13 +26,6 @@ int strcmp(const char *str1, const char *str2) {
     return *(const unsigned char*)str1 - *(const unsigned char*)str2;
 }
 
-
-void align(void *ptr, int alignment) {
-    unsigned long *num = (unsigned long *)ptr;
-    if(*num & ~(alignment - 1)){
-        *num = (*num + alignment - 1) & ~(alignment - 1);
-    }
-}
     
 void input_string(char *input_buffer) {
     int i = 0;
@@ -61,4 +54,17 @@ unsigned int my_atoi(const char *str) {
         str++;
     }
     return result;
+}
+
+unsigned long align(unsigned long num, unsigned long alignment) {
+    return (num + alignment - 1) & ~(alignment - 1);
+
+}
+
+unsigned int string_len(const char *str) {
+    unsigned int len = 0;
+    while (*str++) {
+        len++;
+    }
+    return len;
 }

@@ -22,6 +22,6 @@ struct cpio_newc_header {
    char    c_check[8];
  };
 
-void cpio_ls(void);
-void cpio_cat(char *filename);
+void cpio_ls(unsigned long initramfs_start);
+void cpio_cat(char *filename,unsigned long initramfs_start);
 #endif
