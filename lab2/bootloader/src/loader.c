@@ -1,16 +1,10 @@
 #include "loader.h"
-#include <stdint.h>
 
 unsigned int checksum = 0;
 unsigned int size = 0;
 unsigned char header[8];
 
-
 void load_kernel() {
-    uart_send_string("\n\rJumping to kernel...\n\r");
-    uart_send_string("dtb_addr: ");
-    uart_send_hex((unsigned long)dtb_addr);
-    uart_send_string("\n");
     uart_send_string("\n\rWaiting for kernel...\n\r");
     
     for(int i = 0; i < 4; i++) {
@@ -47,27 +41,20 @@ void receive_kernel(int size) {
             // reset(100);
             return;
         }
-        *kernel = uart_receive_char();
-        kernel++;
+        kernel[i] = uart_receive_char();
         if((i % 1024) == 0) {
             uart_send_string("."); 
-            uart_send_string("\n\rKernel address: ");
-            uart_send_hex((unsigned long)kernel);
-            uart_send_string("\n\rdtb_addr: ");
-            uart_send_hex((unsigned long)dtb_addr);
         }
     }
     dtb_addr = saved_dtb_addr;
 }
 
 void jump_to_kernel() {
-    typedef void (*kernel_func)(uint64_t, uint64_t);
+    typedef void (*kernel_func)(uint64_t);
     kernel_func kernel_entry = (kernel_func)KERNEL_ADDR;
-    uart_send_string("kernel_entry: ");
-    uart_send_hex((unsigned long)KERNEL_ADDR);
     uart_send_string("\n\rJumping to kernel...\n\r");
     uart_send_string("dtb_addr: ");
     uart_send_hex((unsigned long)dtb_addr);
     uart_send_string("\n");
-    kernel_entry((unsigned long)dtb_addr, 0);
+    kernel_entry((unsigned long)dtb_addr);
 }

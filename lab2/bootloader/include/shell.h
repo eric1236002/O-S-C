@@ -4,8 +4,6 @@
 #include "uart.h"
 #include "reboot.h"
 #include "loader.h"
-#include "cpio.h"
-#include "fdt.h"
 #include "utils.h"
 
 char filename_buffer[MAX_INPUT_LEN];
