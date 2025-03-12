@@ -4,7 +4,7 @@
 #include "utils.h"
 #include "fdt.h"
 
-unsigned long initramfs_start;
+extern unsigned long initramfs_start;
 struct cpio_newc_header {
    char    c_magic[6];
    char    c_ino[8];
@@ -22,6 +22,6 @@ struct cpio_newc_header {
    char    c_check[8];
  };
 
-void cpio_ls(void);
-void cpio_cat(char *filename);
+void cpio_ls(unsigned long initramfs_start);
+void cpio_cat(char *filename,unsigned long initramfs_start);
 #endif

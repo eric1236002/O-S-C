@@ -13,7 +13,8 @@ OBJS = $(BUILD_DIR)/boot.o \
        $(BUILD_DIR)/loader.o \
        $(BUILD_DIR)/shell.o \
        $(BUILD_DIR)/fdt.o \
-       $(BUILD_DIR)/utils.o
+       $(BUILD_DIR)/utils.o \
+       $(BUILD_DIR)/cpio.o
 
 
 CFLAGS = -Wall -O0 -ffreestanding -nostdlib -nostartfiles -I$(INCLUDE_DIR) -g
