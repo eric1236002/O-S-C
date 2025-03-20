@@ -1,0 +1,131 @@
+# Raspberry Pi Bootloader
+
+A simple bootloader for Raspberry Pi that loads a kernel image via UART.
+
+## Overview
+
+This bootloader is designed to load a kernel image into memory via UART communication and execute it. Key features:
+
+- Two-stage loading process
+- UART communication (115200 baud rate)
+- Memory-safe loading mechanism
+- Progress indicators and error handling
+- Relocation support
+- Built-in simple shell interface
+
+## Memory Layout
+```
+Memory Map:
++----------------+ 0x00000
+|                |
+|                |
++----------------+ 0x60000
+|  BOOTLOADER    |  <-- Bootloader code and data come from 0x60000
+|  Code & Data   |
++----------------+
+|                |
+|                |
++----------------+ 0x80000
+|    KERNEL      |  <-- Kernel loading address
+|  Code & Data   |
++----------------+
+|                |
+|                |
++----------------+ 0x400000
+|   Stack (SP)   |
++----------------+
+```
+
+## Core Components
+
+### 1. Boot Process (boot.S)
+- System initialization implementation
+- CPU core selection handling
+- Bootloader relocation execution
+- Stack pointer setup
+- BSS section initialization
+
+### 2. UART Communication (uart.c)
+- Based on BCM2835 Mini UART
+- Configuration: 115200 baud rate, 8 data bits, no parity, 1 stop bit
+- Basic I/O operation support
+- Interrupt handling implementation
+
+### 3. Loader (loader.c)
+- Kernel reception and loading management
+- Chunk-based loading support
+- Timeout handling and retry mechanisms
+- Kernel loading address: 0x80000
+
+### 4. Shell Interface (shell.c)
+- Basic command-line interface
+- System command support
+- Debugging and operation utilities
+
+### 5. System Control (reboot.c)
+- System reboot functionality
+- Power management support
+
+## Build Instructions
+
+```bash
+# Clean and build bootloader
+cd bootloader
+make clean
+make
+
+# Build kernel (if needed)
+cd ../kernel
+make clean
+make
+```
+
+## Hardware Connection
+
+UART Connection Setup:
+- TX: GPIO14 (Pin 8)
+- RX: GPIO15 (Pin 10)
+- GND: Ground Pin
+
+## Debugging Guide
+
+In first terminal:
+### QEMU Simulation
+```bash
+make load
+```
+In second terminal:
+```bash
+sudo minicom -D /dev/pts/x -b 115200
+```
+
+### GDB Debugging
+In first terminal:
+```bash
+make debug
+```
+
+In second terminal:
+```bash
+cd /mnt/d/Cloud/O-S-C/lab2/bootloader
+gdb-multiarch -x debug.gdb
+```
+
+## Project Structure
+
+```
+bootloader/
+├── boot.S          # Boot code
+├── linker.ld       # Linker script
+├── Makefile        # Build configuration
+├── debug.gdb       # GDB debug script
+├── src/
+│   ├── loader.c    # Kernel loader
+│   ├── shell.c     # Command interface
+│   ├── uart.c      # UART driver
+│   └── reboot.c    # System reboot
+└── include/        # Header files
+
+```
+
+
