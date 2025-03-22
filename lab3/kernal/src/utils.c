@@ -18,6 +18,33 @@ int hextodec(const char *hex) {
     return result;
 }
 
+
+char* itoa(int num, int base) {
+    int i = 0;
+    char str[32];
+    if (num == 0) {
+        str[i++] = '0'; 
+        str[i] = '\0';
+        return str;
+    }
+    if(base == 16){
+        str[i++] = '0';
+        str[i++] = 'x';
+    }
+    while(num){
+        int rem= num%base;
+        if(rem>9){
+            str[i++]=rem-10+'a';
+        }
+        else{
+            str[i++]=rem+'0';
+        }
+        num/=base;
+    }
+    str[i]='\0';
+    return str;
+}
+
 int strcmp(const char *str1, const char *str2) {
     while (*str1 && (*str1 == *str2)) {
         str1++;
@@ -67,4 +94,31 @@ unsigned int string_len(const char *str) {
         len++;
     }
     return len;
+}
+
+char *utohx(unsigned int num) {
+    char str[9];
+    str[9] = '\0';
+    int i = 7;
+    while (num > 0) {
+        if(num % 16 > 9){
+            str[i--] = num % 16 - 10 + 'a';
+        }
+        else{
+            str[i--] = num % 16 + '0';
+        }
+        num /= 16;
+    }
+    return str;
+}
+
+void print_el() {
+    unsigned int el;
+
+    asm volatile("mrs %0, CurrentEL" : "=r"(el));
+    el = (el >> 2) & 0x3;  
+    
+    uart_send_string("\n\rException level: ");
+    uart_send_int(el);
+    uart_send_string("\n\r");
 }

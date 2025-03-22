@@ -12,4 +12,5 @@ void input_string(char *input_buffer);
 unsigned int my_atoi(const char *str);
 unsigned int input_int(char *input_buffer);
 unsigned int string_len(const char *str);
+char* itoa(int num, int base);
 #endif

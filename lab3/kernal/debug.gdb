@@ -10,6 +10,10 @@ define fdt_header_type
   set $fdt_header_off_dt_strings_offset = 12
 end
 
+layout src
+
+layout asm
+
 # 加載符號
 file kernel8.elf
 
@@ -19,31 +23,13 @@ target remote localhost:1234
 # 執行結構體定義
 fdt_header_type
 
-# 設置常用斷點
-break fdt_traverse
-commands
-    # 打印 DTB header 信息
-    printf "檢查 DTB header:\n"
-    printf "Magic: 0x%x\n", *(uint32_t *)(fdt + $fdt_header_magic_offset)
-    printf "Total size: 0x%x\n", *(uint32_t *)(fdt + $fdt_header_totalsize_offset)
-    printf "Struct offset: 0x%x\n", *(uint32_t *)(fdt + $fdt_header_off_dt_struct_offset)
-    printf "Strings offset: 0x%x\n", *(uint32_t *)(fdt + $fdt_header_off_dt_strings_offset)
-    continue
-end
-
-break initramfs_callback
-commands
-    # 打印 initramfs 信息
-    printf "initramfs 回調函數:\n"
-    x/s node_name
-    x/s property_name
-    x/wx property_value
-    continue
-end
-
-# 監視 initramfs_start 變量
-watch (unsigned long)initramfs_start
-
+break cpio_load_program
+break *0x814c0
+#break *0x81e4c
+break *0x200000
+break *0x83940
+break *0x8393c
+break *0x20000c
 # 設置調試輸出
 set print pretty on
 set print array on
@@ -51,6 +37,9 @@ set print array-indexes on
 
 # 顯示即將執行的指令
 display/i $pc
+
+# 顯示 filesize 變數
+display filesize
 
 # 開始執行
 continue 

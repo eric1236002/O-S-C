@@ -37,24 +37,124 @@ kernal/
 └── linker.ld         # Linker script
 ```
 
+## Exception Handling & EL0/EL1 Switching
+
+This kernel implements a complete exception handling system for both kernel (EL1) and user (EL0) mode operations.
+
+### Exception Vector Table
+
+The architecture uses a vector table structure with entries for different exception types:
+- Synchronous exceptions (e.g., system calls)
+- IRQ interrupts
+- FIQ fast interrupts
+- System errors
+
+Each exception type has specific handlers for different execution levels (EL1t, EL1h, EL0_64, EL0_32).
+
+### Exception Types
+
+- `SynchronousEL1t/h`: Exceptions occurring at EL1 with SP_EL0/SP_EL1
+- `IRQEL1t/h`: IRQ interrupts at EL1
+- `FIQEL1t/h`: FIQ interrupts at EL1
+- `ErrorEL1t/h`: System errors at EL1
+- `SynchronousEL0_64/32`: System calls and exceptions from 64-bit/32-bit user mode
+- `IRQEL0_64/32`: IRQ interrupts from user mode
+- `FIQEL0_64/32`: FIQ interrupts from user mode
+- `ErrorEL0_64/32`: System errors from user mode
+
+### EL0/EL1 Switching
+
+The kernel supports execution of user programs at EL0:
+1. Programs are loaded from the CPIO archive to memory
+2. Exception vector table is configured with `set_exception_vector_table()`
+3. Register state is set up for EL0 execution:
+   - `SPSR_EL1 = 0x3c0` (EL0, SP_EL0, interrupts enabled)
+   - `ELR_EL1` points to the user program entry
+   - `SP_EL0` is set to provide user stack space
+4. `eret` instruction switches to EL0 and begins user program execution
+
+### System Call Handling
+
+User programs can perform system calls using the `svc` instruction:
+1. The instruction triggers a synchronous exception, moving execution to EL1
+2. The exception is caught by the vector table handler
+3. The `SynchronousEL0_64` case in `exception_entry()` handles the call:
+   - Extracts exception information from ESR_EL1
+   - For SVC (0x15), processes the requested system call
+   - Updates ELR_EL1 to point to the next instruction
+4. After handling, execution returns to user mode at the instruction following the SVC
+
+### Context Saving/Restoring
+
+Full register state is preserved during exception handling:
+- `save_all`: Saves all general purpose registers to the stack
+- `load_all`: Restores all registers before returning from the exception
+- Special registers (SPSR_EL1, ELR_EL1, etc.) are managed by the exception handlers
+
+### User Program Example
+
+```assembly
+_start:
+    mov x0, 0
+1:
+    add x0, x0, 1
+    svc 0           // System call to kernel
+    cmp x0, 5
+    blt 1b
+1:
+    b 1b            // Infinite loop when done
+```
+
 ## Memory Layout
 
-```
 Memory Map:
-+----------------+ 0x00000000
-|                |
-|                |
-+----------------+ 0x20000000
-|    INITRD      |  <-- CPIO archive loaded here
-|                |
-+----------------+ 0x80000
-|    KERNEL      |  <-- Kernel code and data
-|                |
-+----------------+ heap_start
-|    HEAP        |  <-- Dynamic memory allocation
-|                |
-+----------------+ heap_end
-```
++------------------+ 0x00000000
+|                  |
+|    Reserved      |
+|                  |
++------------------+ 0x00060000
+|                  |
+|    Bootloader    |    (128KB)
+|                  |
++------------------+ 0x00080000
+|                  |
+|   Kernel Code    |    
+|     (.text)      |
+|                  |
+|   [Exception     |    (Aligned to 0x800 bytes)
+|    Vector Table] |    (Set via vbar_el1)
+|                  |
++------------------+ 
+|                  |
+|   Kernel Data    |    
+|     (.data)      |
+|                  |
++------------------+ 
+|                  |
+|   Kernel BSS     |    
+|     (.bss)       |    
+|                  |
++------------------+ 0x00100000
+|                  |
+|   Kernel Heap    |    (Dynamically allocated memory)
+|                  |
++------------------+ 0x00200000
+|                  |
+|                  |
+|   User Code      |    (.text - Loaded from CPIO archive)
+|   User Data      |    (.data)
+|   User BSS       |    (.bss)
+|   User Heap      |    (Dynamically allocated memory)
+|                  |
++------------------+ 0x00400000
+|                  |
+|   Kernel Stack   |    (For EL1 execution)
+|                  |    (SP_EL1 points here during kernel mode)
++------------------+
+|                  |
+| Exception Frames |    (Register state saved during exceptions)
+|                  |    (32 registers × 8 bytes per exception)
++------------------+
 
 ## Memory Management
 

@@ -6,6 +6,7 @@ OBJCOPY = aarch64-linux-gnu-objcopy
 BUILD_DIR = build
 INCLUDE_DIR = include
 SRC_DIR = src
+USER_DIR = user
 
 OBJS = $(BUILD_DIR)/boot.o \
 		$(BUILD_DIR)/reboot.o \
@@ -14,16 +15,19 @@ OBJS = $(BUILD_DIR)/boot.o \
 		$(BUILD_DIR)/cpio.o \
 		$(BUILD_DIR)/utils.o \
 		$(BUILD_DIR)/allocator.o \
-		$(BUILD_DIR)/fdt.o
+		$(BUILD_DIR)/fdt.o \
+		$(BUILD_DIR)/exception_c.o \
+		$(BUILD_DIR)/exception_s.o
 
 
 CFLAGS = -Wall -O0 -g -ffreestanding -nostdlib -nostartfiles -I$(INCLUDE_DIR)
 LDFLAGS = -T linker.ld -nostdlib
 
-all: kernel8.img
+all: kernel8.img create_rootfs
 
 kernel8.elf: $(OBJS)
 	$(LD) $(LDFLAGS) -o $@ $(OBJS)
+	
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(BUILD_DIR)
@@ -43,6 +47,22 @@ $(BUILD_DIR)/boot.o: boot.S
 kernel8.img: kernel8.elf
 	$(OBJCOPY) -O binary $< $@
 
+$(USER_DIR)/user.o: $(USER_DIR)/user.s
+	$(AS) -c $< -o $@
+
+user.elf: $(USER_DIR)/user.o
+	$(LD) -T $(USER_DIR)/user.ld -o $@ $<
+
+user.img: user.elf
+	$(OBJCOPY) -O binary $< $@
+
+
+create_rootfs: user.img
+	@mkdir -p ../rootfs
+	cp user.img ../rootfs/
+	cp kernel8.img .././
+	cd ../rootfs && find . -print0 | cpio --null -ov --format=newc > ../initramfs.cpio
+	rm -f user.elf user.img
 clean:
 	rm -rf $(BUILD_DIR)
 	rm -f kernel8.elf kernel8.img

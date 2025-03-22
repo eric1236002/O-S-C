@@ -5,6 +5,8 @@
 #include "fdt.h"
 
 extern unsigned long initramfs_start;
+#define USTACK_SIZE 0x2000
+#define PROGRAM_ADDR 0x200000
 struct cpio_newc_header {
    char    c_magic[6];
    char    c_ino[8];
@@ -24,4 +26,5 @@ struct cpio_newc_header {
 
 void cpio_ls(unsigned long initramfs_start);
 void cpio_cat(char *filename,unsigned long initramfs_start);
+void cpio_load_program(char *filename,unsigned long initramfs_start);
 #endif

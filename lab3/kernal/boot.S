@@ -40,11 +40,6 @@ from_el2_to_el1:
                                 // which is the address of the instruction that was used to jump to EL2.
     eret                        // return to EL1
 
-set_exception_vector_table:
-    adr x1, exception_vector_table
-    msr vbar_el1, x1
-    ret
-
 waiting:
     wfe
     b _start
@@ -53,9 +48,8 @@ waiting:
 .global dtb_addr
 dtb_addr: .dc.a 0x0
 
+
 //0x3c5=0b001111000101
-
-
 //m[3:0] = 0b1010 means EL1h
 //m[6] = 1 means FIQ mask bit,Exception masked.
 //m[7] = 1 means IRQ mask bit,Exception masked.
@@ -63,6 +57,8 @@ dtb_addr: .dc.a 0x0
 //m[9] = 1 means Process state D mask mask bit,Exception masked.
 
 
-
-
-
+.globl get_el
+get_el:
+    mrs x10, CurrentEL
+    lsr x10, x10, #2
+    ret
