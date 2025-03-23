@@ -104,6 +104,29 @@ _start:
 1:
     b 1b            // Infinite loop when done
 ```
+## Timer and Interrupt Handling
+
+[TIMER.md](TIMER.md)
+
+### Core Timer Configuration
+- Core timer frequency is read from `cntfrq_el0`
+- Timer control register: `cntp_ctl_el0`
+- Timer value register: `cntp_tval_el0`
+- Current counter: `cntpct_el0`
+- Core0 timer IRQ control: `0x40000040`
+
+### Timer Implementation
+- Timer is configured during kernel initialization
+- Interrupt interval: 2 seconds (freq * 2)
+- Timer handler displays current system uptime
+- Core0 timer IRQ control is set to 2 (disable interrupts)
+
+### Timer Registers
+- `cntfrq_el0`: Timer frequency
+- `cntp_ctl_el0`: Timer control
+- `cntp_tval_el0`: Timer value
+- `cntpct_el0`: Current counter 
+- `0x40000040`: Core0 timer IRQ control
 
 ## Memory Layout
 
@@ -187,7 +210,7 @@ This seamless handoff ensures that the kernel receives the necessary hardware co
 ```
 Bootloader                        Kernel
     |                              |
-    |-- x0 (DTB address) ------>  |
+    |-- x0 (DTB address) ------>   |
     |     Transfer control         |
     |                              |
     |                     Read x0 to dtb_address

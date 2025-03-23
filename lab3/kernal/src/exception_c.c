@@ -58,7 +58,8 @@ void exception_entry(unsigned int type) {
             uart_send_string("\n\r");
             break;
         case IRQEL0_64:
-            // uart_send_string("\n\rIRQEL0_64");
+            core_timer_enable();
+            core_timer_handler();
             break;
         case FIQEL0_64:
             // uart_send_string("\n\rFIQEL0_64");

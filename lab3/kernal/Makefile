@@ -17,7 +17,8 @@ OBJS = $(BUILD_DIR)/boot.o \
 		$(BUILD_DIR)/allocator.o \
 		$(BUILD_DIR)/fdt.o \
 		$(BUILD_DIR)/exception_c.o \
-		$(BUILD_DIR)/exception_s.o
+		$(BUILD_DIR)/exception_s.o \
+		$(BUILD_DIR)/timer.o
 
 
 CFLAGS = -Wall -O0 -g -ffreestanding -nostdlib -nostartfiles -I$(INCLUDE_DIR)

@@ -1,6 +1,7 @@
 #ifndef EXCEPTION_H
 #define EXCEPTION_H
 #include "uart.h"
+#include "timer.h"
 
 #define SynchronousEL1t 1
 #define IRQEL1t 2
