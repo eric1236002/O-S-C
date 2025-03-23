@@ -17,6 +17,6 @@ void core_timer_handler()
     asm volatile("msr cntp_tval_el0, %0\n":: "r"(freq*2));  
     asm volatile("mrs x0, cntpct_el0\n" : "=r"(current_time));
     uart_send_string("After boot. Current time: ");
-    uart_send_int(divide(current_time/freq));
+    uart_send_int(current_time/freq);
     uart_send_string("\n");
 }
