@@ -165,6 +165,7 @@ void cpio_load_program(char *filename,unsigned long initramfs_start) {
                     asm volatile("msr spsr_el1, x0   \n"); //spsr_el1 set to 0x3c0
                     asm volatile("msr elr_el1, %0    \n" ::"r"(program_addr)); //exception return address
                     asm volatile("msr sp_el0, %0    \n" ::"r"(program_addr + USTACK_SIZE)); //stack pointer
+                    asm volatile("bl core_timer_enable"); //enable core timer
                     asm volatile("eret   \n"); //switch to exception level 0
                     break;
                 }

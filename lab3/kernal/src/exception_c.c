@@ -23,13 +23,19 @@ void uart_interrupt_disable() {
 void irq_handler()
 {
     disable_interrupt();
-    unsigned int uart = (*IRQ_ENABLE_1 & (1<<29)); //p.113 bcm2835
-    // if (uart)
-    // {
-    //     uart_interrupt_enable();
-    //     uart_interrupt_handler();
-    //     uart_interrupt_disable();
-    // }
+    //check core timer interrupt
+    if (*CORE0_TIMER_IRQ_CTRL & 0x2) {
+        core_timer_handler();
+    }
+    
+    //check uart interrupt
+    unsigned int uart = (*IRQ_ENABLE_1 & (1<<29));
+    if (uart) {
+        uart_interrupt_enable();
+        // uart_interrupt_handler();
+        uart_interrupt_disable();
+    }
+    
     enable_interrupt();
 }
 
