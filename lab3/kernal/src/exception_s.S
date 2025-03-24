@@ -1,22 +1,22 @@
-.equ SynchronousEL1t, 1
-.equ IRQEL1t, 2
-.equ FIQEL1t, 3
-.equ ErrorEL1t, 4
+.equ SynchronousEL1t, 0
+.equ IRQEL1t, 1
+.equ FIQEL1t, 2
+.equ ErrorEL1t, 3
 
-.equ SynchronousEL1h, 5
-.equ IRQEL1h, 6
-.equ FIQEL1h, 7
-.equ ErrorEL1h, 8
+.equ SynchronousEL1h, 4
+.equ IRQEL1h, 5
+.equ FIQEL1h, 6
+.equ ErrorEL1h, 7
 
-.equ SynchronousEL0_32, 9
-.equ IRQEL0_32, 10
-.equ FIQEL0_32, 11
-.equ ErrorEL0_32, 12
+.equ SynchronousEL0_32, 8
+.equ IRQEL0_32, 9
+.equ FIQEL0_32, 10
+.equ ErrorEL0_32, 11
 
-.equ SynchronousEL0_64, 13
-.equ IRQEL0_64, 14
-.equ FIQEL0_64, 15
-.equ ErrorEL0_64, 16
+.equ SynchronousEL0_64, 12
+.equ IRQEL0_64, 13
+.equ FIQEL0_64, 14
+.equ ErrorEL0_64, 15
 
 
 .macro handle_invalid_entry type

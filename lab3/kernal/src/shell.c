@@ -22,7 +22,6 @@ int main() {
     uart_send_hex((unsigned long)dtb_addr);
     uart_send_string("\n");
 
-    // 檢查 DTB 頭部的前幾個字節
     uart_send_string("\n\rDTB header bytes: ");
     unsigned char* dtb_bytes = (unsigned char*)dtb_addr;
     for (int i = 0; i < 16; i++) {
