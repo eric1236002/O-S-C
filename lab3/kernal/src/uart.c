@@ -1,6 +1,18 @@
 #include <stdint.h>
 #include "uart.h"
 
+// buffer
+struct uart_buffer {
+    char data[UART_BUFFER_SIZE];
+    int read_pos;
+    int write_pos;
+    int count;
+};
+
+// buffer
+static struct uart_buffer rx_buffer = {0};
+static struct uart_buffer tx_buffer = {0};
+
 void uart_init(void) {
     register unsigned int r;
 
@@ -20,17 +32,89 @@ void uart_init(void) {
     // init UART
     *AUX_ENABLES |= 1;    // enable mini UART
     *AUX_MU_CNTL = 0;     // stop the UART
-    *AUX_MU_IER = 0;      // stop the UART interrupt
+    *AUX_MU_IER = 0x1;    // enable receive interrupt
     *AUX_MU_LCR = 3;      // set to 8 data bits, no parity bit, 1 stop bit
     *AUX_MU_MCR = 0;      // set RTS line to be always high
     *AUX_MU_BAUD = 270;   // set baud rate to 115200
     *AUX_MU_IIR = 6;      // clear FIFO
-    *AUX_MU_CNTL = 3;     // 啟用收發器
+    *AUX_MU_CNTL = 3;     // enable receiver and transmitter
+
+    // enable receive interrupt
+    *AUX_MU_IER = 0x1;    // enable receive interrupt
+    *IRQ_ENABLE_1 |= (1 << 29);  // enable UART IRQ
+    
+    // init buffer
+    rx_buffer.read_pos = rx_buffer.write_pos = rx_buffer.count = 0;
+    tx_buffer.read_pos = tx_buffer.write_pos = tx_buffer.count = 0;
 }
 
 void uart_send_char(char c) {
     while(!(*AUX_MU_LSR & 0x20)); // wait until can send
     *AUX_MU_IO = c;
+}
+
+// get a char from buffer
+char uart_async_getc() {
+    char c = 0;
+    
+    // disable interrupt to protect critical section
+    disable_interrupt();
+    
+    if (rx_buffer.count > 0) {
+        c = rx_buffer.data[rx_buffer.read_pos];
+        rx_buffer.read_pos = (rx_buffer.read_pos + 1) % UART_BUFFER_SIZE;
+        rx_buffer.count--;
+    }
+    
+    enable_interrupt();
+    return c;
+}
+
+// put a char to buffer
+void uart_async_putc(char c) {
+    disable_interrupt();
+    
+    // check if buffer is full
+    if (tx_buffer.count < UART_BUFFER_SIZE) {
+        tx_buffer.data[tx_buffer.write_pos] = c;
+        tx_buffer.write_pos = (tx_buffer.write_pos + 1) % UART_BUFFER_SIZE;
+        tx_buffer.count++;
+        
+        // enable transmit interrupt
+        *AUX_MU_IER |= 0x2;
+    }
+    
+    enable_interrupt();
+}
+
+// modify interrupt handler
+void uart_interrupt_handler() {
+    // read interrupt identification register
+    int iir = *AUX_MU_IIR & 0x6;
+    
+    // receive interrupt
+    if (iir & 0x4) {
+        char c = (char)(*AUX_MU_IO);
+        if (rx_buffer.count < UART_BUFFER_SIZE) {
+            rx_buffer.data[rx_buffer.write_pos] = c;
+            rx_buffer.write_pos = (rx_buffer.write_pos + 1) % UART_BUFFER_SIZE;
+            rx_buffer.count++;
+        }
+    }
+    
+    // transmit interrupt
+    if (iir & 0x2) {
+        if (tx_buffer.count > 0) {
+            *AUX_MU_IO = tx_buffer.data[tx_buffer.read_pos];
+            tx_buffer.read_pos = (tx_buffer.read_pos + 1) % UART_BUFFER_SIZE;
+            tx_buffer.count--;
+        }
+        
+        // if transmit buffer is empty, disable transmit interrupt
+        if (tx_buffer.count == 0) {
+            *AUX_MU_IER &= ~0x2;
+        }
+    }
 }
 
 char uart_receive_char(void) {

@@ -31,9 +31,7 @@ void irq_handler()
     //check uart interrupt
     unsigned int uart = (*IRQ_ENABLE_1 & (1<<29));
     if (uart) {
-        uart_interrupt_enable();
-        // uart_interrupt_handler();
-        uart_interrupt_disable();
+        uart_interrupt_handler();
     }
     
     enable_interrupt();
@@ -58,7 +56,12 @@ void exception_entry(unsigned int type) {
             // uart_send_string("\n\rErrorEL1t");
             break;
         case SynchronousEL1h:
-            // uart_send_string("\n\rSynchronousEL1h");
+            unsigned long e;
+            uart_send_string("\n\rSynchronous exception at EL1h\n\r");
+            asm volatile("mrs %0, esr_el1" : "=r"(e));
+            uart_send_string("\n\rESR_EL1: ");
+            uart_send_hex(e);
+            uart_send_string("\n\r");
             break;
         case IRQEL1h:
             // uart_send_string("\n\rIRQEL1h");
