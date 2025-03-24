@@ -24,6 +24,10 @@
 #define AUX_MU_CNTL        ((volatile unsigned int*)(AUX_BASE + 0x60))
 #define AUX_MU_STAT        ((volatile unsigned int*)(AUX_BASE + 0x64))
 #define AUX_MU_BAUD        ((volatile unsigned int*)(AUX_BASE + 0x68))
+#define IRQ_ENABLE_1      ((volatile unsigned int*)(PERIPHERAL_BASE + 0xb210))
+#define IRQ_DISABLE_1     ((volatile unsigned int*)(PERIPHERAL_BASE + 0xb21C))
+#define UART_BUFFER_SIZE 256  // 定義環形緩衝區大小
+
 
 void uart_init(void);
 void uart_send_char(char c);

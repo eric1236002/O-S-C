@@ -1,5 +1,39 @@
 #include "exception.h"
 
+void enable_interrupt() { 
+    asm volatile("msr DAIFClr, 0xf"); 
+}
+
+void disable_interrupt() { 
+    asm volatile("msr DAIFSet, 0xf"); 
+}
+
+void uart_interrupt_enable() {
+    /*
+    AUX_MU_IER:    If this bit is set the interrupt line is asserted whenever
+                   the receive FIFO holds at least 1 byte.
+    */
+    *AUX_MU_IER |= 0x3;
+}
+
+void uart_interrupt_disable() {
+    *AUX_MU_IER &= ~(0x3);
+}
+
+void irq_handler()
+{
+    disable_interrupt();
+    unsigned int uart = (*IRQ_ENABLE_1 & (1<<29)); //p.113 bcm2835
+    // if (uart)
+    // {
+    //     uart_interrupt_enable();
+    //     uart_interrupt_handler();
+    //     uart_interrupt_disable();
+    // }
+    enable_interrupt();
+}
+
+
 void exception_entry(unsigned int type) {
     uart_send_string("\n\rException type: ");
     uart_send_hex(type);
@@ -42,6 +76,7 @@ void exception_entry(unsigned int type) {
             // uart_send_string("\n\rErrorEL0_32");
             break;
         case SynchronousEL0_64:
+            disable_interrupt();
             unsigned long spsr, elr, esr;
             asm volatile("mrs %0, spsr_el1" : "=r"(spsr));
             asm volatile("mrs %0, elr_el1" : "=r"(elr));
@@ -56,10 +91,12 @@ void exception_entry(unsigned int type) {
             uart_send_string("\n\rESR_EL1: ");
             uart_send_hex(esr);
             uart_send_string("\n\r");
+            enable_interrupt();
             break;
         case IRQEL0_64:
-            core_timer_enable();
-            core_timer_handler();
+            disable_interrupt();
+            irq_handler();
+            enable_interrupt();
             break;
         case FIQEL0_64:
             // uart_send_string("\n\rFIQEL0_64");

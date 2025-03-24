@@ -20,6 +20,9 @@
 
 
 .macro handle_invalid_entry type
+    bl core_timer_enable
+    bl core_timer_handler
+    bl core_timer_disable
     save_all
     mov	x0, #\type
     bl exception_entry

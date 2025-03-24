@@ -7,7 +7,7 @@
 
 void core_timer_enable();
 void core_timer_handler();
-
+void core_timer_disable();
 #endif
 
 
