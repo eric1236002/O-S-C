@@ -12,7 +12,7 @@ end
 
 layout src
 
-layout asm
+# layout asm
 
 # 加載符號
 file kernel8.elf
@@ -24,12 +24,15 @@ target remote localhost:1234
 fdt_header_type
 
 break cpio_load_program
-break *0x814c0
+#break *0x814c0
 #break *0x81e4c
-break *0x200000
-break *0x83940
-break *0x8393c
-break *0x20000c
+#break *0x200000
+#break *0x83940
+#break *0x8393c
+#break *0x20000c
+break *0x83ce8
+#break process_timers
+break add_timer
 # 設置調試輸出
 set print pretty on
 set print array on
@@ -37,9 +40,26 @@ set print array-indexes on
 
 # 顯示即將執行的指令
 display/i $pc
-
+display/i $current_time
 # 顯示 filesize 變數
-display filesize
+display current_time
+display timer_queue[timer_count].expire_time
+display  mrs %0, cntpct_el0
+display  time
+display after
+display freq
+display timer_count
+display timer_queue[timer_count].expire_time
+display timer_queue[timer_count].active
+
+
+display timer_queue[i].expire_time
+display timer_queue[i].active
+display i
+display time_to_expire
+display earliest_time
+display still_have
+display timer_count
 
 # 開始執行
 continue 

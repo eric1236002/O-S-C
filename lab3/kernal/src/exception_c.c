@@ -64,7 +64,9 @@ void exception_entry(unsigned int type) {
             uart_send_string("\n\r");
             break;
         case IRQEL1h:
-            // uart_send_string("\n\rIRQEL1h");
+            disable_interrupt();
+            irq_handler();
+            enable_interrupt();
             break;
         case FIQEL1h:
             // uart_send_string("\n\rFIQEL1h");

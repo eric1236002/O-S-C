@@ -3,7 +3,7 @@
 char input_buffer[MAX_INPUT_LEN];
 char filename_buffer[MAX_INPUT_LEN];
 char size_str[MAX_INPUT_LEN];
-
+char message_buffer[MAX_INPUT_LEN];
 void initramfs_callback(const char *node_name, const char *property_name, const void *property_value)
 {
     if(strcmp(property_name,"linux,initrd-start")==0){
@@ -22,6 +22,7 @@ int main() {
     uart_send_hex((unsigned long)dtb_addr);
     uart_send_string("\n");
 
+    enable_interrupt();  
     uart_send_string("\n\rDTB header bytes: ");
     unsigned char* dtb_bytes = (unsigned char*)dtb_addr;
     for (int i = 0; i < 16; i++) {
@@ -44,8 +45,9 @@ int main() {
             uart_send_string("reboot :reboot the system\n\r");
             uart_send_string("ls     :list the files in the current directory\n\r");
             uart_send_string("cat    :show the content of a file\n\r");
-            uart_send_string("user :load program to memory\n\r");
+            uart_send_string("exec   :load program to memory\n\r");
             uart_send_string("malloc :allocate memory\n\r");
+            uart_send_string("timer  :set timer to send message\n\r");
         } else if(strcmp(input_buffer, "reboot") == 0) {
             uart_send_string("\n\rReboot\n\r");
             reset(100);
@@ -65,11 +67,19 @@ int main() {
             uart_send_hex64((unsigned long)ptr);
             uart_send_string("\n\r");
         } 
-        else if(strcmp(input_buffer, "user") == 0) {
+        else if(strcmp(input_buffer, "exec") == 0) {
             uart_send_string("\n\rEnter filename: ");
             input_string(filename_buffer);
             uart_send_string("\n\r");
             cpio_load_program(filename_buffer, initramfs_start);
+        }
+        else if(strcmp(input_buffer, "timer") == 0) {
+            uart_send_string("\n\rEnter time: ");
+            unsigned int time = input_int(size_str);
+            uart_send_string("\n\rEnter message: ");
+            input_string(message_buffer);
+            uart_send_string("\n\r");
+            setTimeout(message_buffer, time);
         }
         else {
             uart_send_string("\n\rInvalid command\n\r");

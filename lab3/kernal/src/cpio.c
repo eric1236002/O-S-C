@@ -161,8 +161,8 @@ void cpio_load_program(char *filename,unsigned long initramfs_start) {
                 filedata++;
                 if(file_offset == 0) {
                     uart_send_string("Loading program success\n\r");
-                    asm volatile("mov x0, 0x340      \n");
-                    asm volatile("msr spsr_el1, x0   \n"); //spsr_el1 set to 0x340 
+                    asm volatile("mov x0, 0x240      \n");
+                    asm volatile("msr spsr_el1, x0   \n"); //spsr_el1 set to 0x240 
                     asm volatile("msr elr_el1, %0    \n" ::"r"(program_addr)); //exception return address
                     asm volatile("msr sp_el0, %0    \n" ::"r"(program_addr + USTACK_SIZE)); //stack pointer
                     asm volatile("bl core_timer_enable"); //enable core timer
