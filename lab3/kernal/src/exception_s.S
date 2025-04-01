@@ -27,12 +27,22 @@
     eret
 .endm
 
+// use 7 bytes alignment for the entry
+//provide the enough space for the entry
 .macro	ventry	type
     .align	7
     b	\type
 .endm
 
 // save general registers to stack
+// ARM64 has 32 general registers
+// x0-x30 are the general registers
+// but 31 number is not suitable for stp instruction
+// each register is 8 bytes
+// so 32 registers * 8 bytes = 256 bytes
+// stp can store 2 registers at a time
+
+
 .macro save_all
     sub sp, sp, 32 * 8
     stp x0, x1, [sp ,16 * 0]
@@ -74,8 +84,9 @@
     add sp, sp, 32 * 8 
 .endm
 
-
-.align 11 // vector table should be aligned to 0x800
+// vector table should be aligned to 0x800
+// 16*128 = 2048
+.align 11
 .global exception_vector_table
 exception_vector_table:
 	ventry	sync_invalid_el1t			// Synchronous EL1t

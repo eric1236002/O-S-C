@@ -32,6 +32,7 @@ from_el2_to_el1:
     msr    hcr_el2, x1          // store x1 to hcr_el2, EL1 uses aarch64.msr(Move to System Register)
                                 // Forces all stage 2 translations for data accesses and translation table walks to Normal
                                 // memory to be Non-cacheable for the EL1&0 translation regime
+                                //ensures to use AArch64 in EL1
     mov    x1, 0x3c5            // EL1h (SPSel = 1) with interrupt disabled, this action is to switch to EL1
     msr    spsr_el2, x1         // store x1 to spsr_el2. this instruction set the program status of EL2 when entering EL1.
                                 // including interrupt disabled (I and F are set to 1), and selecting EL1h mode (SPSel = 1).

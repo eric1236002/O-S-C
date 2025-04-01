@@ -162,9 +162,9 @@ void cpio_load_program(char *filename,unsigned long initramfs_start) {
                 if(file_offset == 0) {
                     uart_send_string("Loading program success\n\r");
                     asm volatile("mov x0, 0x240      \n");
-                    asm volatile("msr spsr_el1, x0   \n"); //spsr_el1 set to 0x240 
+                    asm volatile("msr spsr_el1, x0   \n"); //spsr_el1 set to 0x240  //enable interrupt
                     asm volatile("msr elr_el1, %0    \n" ::"r"(program_addr)); //exception return address
-                    asm volatile("msr sp_el0, %0    \n" ::"r"(program_addr + USTACK_SIZE)); //stack pointer
+                    asm volatile("msr sp_el0, %0    \n" ::"r"(program_addr + USTACK_SIZE)); //stack pointer.ensure the user program has enough stack space
                     asm volatile("bl core_timer_enable"); //enable core timer
                     asm volatile("eret   \n"); //switch to exception level 0
                     break;

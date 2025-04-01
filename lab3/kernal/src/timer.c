@@ -77,7 +77,7 @@ void process_timers(){
     unsigned long long earliest_time =  ~0ULL;
     for(int i = 0; i < timer_count; i++){
         if(timer_queue[i].expire_time <= current_time){
-            // timer_queue[i].callback(timer_queue[i].data);
+            timer_queue[i].callback(timer_queue[i].data);
             timer_queue[i].active = 0;
         }
         if(timer_queue[i].active){
@@ -133,7 +133,6 @@ void timer_callback(void* data)
     uart_send_string("\n\r");
 }
 void setTimeout(char* message, unsigned long long seconds){
-    // 在堆上分配記憶體，確保在函數返回後仍然有效
     char* message_copy = (char*)simple_alloc(string_len(message) + 1);
     if(message_copy == NULL){
         uart_send_string("\n\rError: Failed to allocate memory for message\n\r");
@@ -146,7 +145,6 @@ void setTimeout(char* message, unsigned long long seconds){
     }
     message_copy[string_len(message)] = '\0';
     
-    // 註冊計時器
     add_timer(timer_callback, message_copy, seconds);
     
     unsigned long long current_time, freq;
