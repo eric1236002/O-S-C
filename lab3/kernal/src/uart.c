@@ -32,15 +32,14 @@ void uart_init(void) {
     // init UART
     *AUX_ENABLES |= 1;    // enable mini UART
     *AUX_MU_CNTL = 0;     // stop the UART
-    *AUX_MU_IER = 0x1;    // enable receive interrupt
     *AUX_MU_LCR = 3;      // set to 8 data bits, no parity bit, 1 stop bit
     *AUX_MU_MCR = 0;      // set RTS line to be always high
     *AUX_MU_BAUD = 270;   // set baud rate to 115200
     *AUX_MU_IIR = 6;      // clear FIFO
     *AUX_MU_CNTL = 3;     // enable receiver and transmitter
 
-    // enable receive interrupt
-    *AUX_MU_IER = 0x1;    // enable receive interrupt
+    // enable interrupt
+    *AUX_MU_IER = 0x3;    // enable interrupt
     *IRQ_ENABLE_1 |= (1 << 29);  // enable UART IRQ
     
     // init buffer

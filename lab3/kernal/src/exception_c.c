@@ -1,11 +1,11 @@
 #include "exception.h"
 
 void enable_interrupt() { 
-    asm volatile("msr DAIFClr, 0xf"); 
+    asm volatile("msr DAIFClr, 0xf"); //use DAIF to enable interrupt  D:debug,A:async,I:interrupt,F:fast interrupt
 }
 
 void disable_interrupt() { 
-    asm volatile("msr DAIFSet, 0xf"); 
+    asm volatile("msr DAIFSet, 0xf"); //use DAIF to disable interrupt  D:debug,A:async,I:interrupt,F:fast interrupt
 }
 
 void uart_interrupt_enable() {
