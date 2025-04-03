@@ -35,6 +35,7 @@ int main() {
 
     unsigned int el = get_el();
     print_el();
+    buddy_init();
     while (1) { 
         uart_send_string("\n\r# ");
 
@@ -48,6 +49,7 @@ int main() {
             uart_send_string("exec   :load program to memory\n\r");
             uart_send_string("malloc :allocate memory\n\r");
             uart_send_string("timer  :set timer to send message\n\r");
+            uart_send_string("alloc  :test allocate memory\n\r");
         } else if(strcmp(input_buffer, "reboot") == 0) {
             uart_send_string("\n\rReboot\n\r");
             reset(100);
@@ -80,6 +82,16 @@ int main() {
             input_string(message_buffer);
             uart_send_string("\n\r");
             setTimeout(message_buffer, time);
+        }
+        else if(strcmp(input_buffer, "alloc") == 0) {
+
+            void* ptr1 = allocate(4000);
+            free(ptr1);
+            void* ptr2 = allocate(8000);
+            void* ptr0 = allocate(4000);
+            free(ptr0);
+            void* ptr3 = allocate(16000);
+            free(ptr3);
         }
         else {
             uart_send_string("\n\rInvalid command\n\r");

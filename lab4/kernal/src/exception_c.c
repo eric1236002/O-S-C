@@ -39,9 +39,9 @@ void irq_handler()
 
 
 void exception_entry(unsigned int type) {
-    uart_send_string("\n\rException type: ");
-    uart_send_hex(type);
-    uart_send_string("\n\r");
+    // uart_send_string("\n\rException type: ");
+    // uart_send_hex(type);
+    // uart_send_string("\n\r");
     switch (type) {
         case SynchronousEL1t:
             // uart_send_string("\n\rSynchronousEL1t");
@@ -57,11 +57,11 @@ void exception_entry(unsigned int type) {
             break;
         case SynchronousEL1h:
             unsigned long e;
-            uart_send_string("\n\rSynchronous exception at EL1h\n\r");
-            asm volatile("mrs %0, esr_el1" : "=r"(e));
-            uart_send_string("\n\rESR_EL1: ");
-            uart_send_hex(e);
-            uart_send_string("\n\r");
+            // uart_send_string("\n\rSynchronous exception at EL1h\n\r");
+            // asm volatile("mrs %0, esr_el1" : "=r"(e));
+            // uart_send_string("\n\rESR_EL1: ");
+            // uart_send_hex(e);
+            // uart_send_string("\n\r");
             break;
         case IRQEL1h:
             disable_interrupt();
