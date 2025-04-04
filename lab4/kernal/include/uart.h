@@ -26,8 +26,17 @@
 #define AUX_MU_BAUD        ((volatile unsigned int*)(AUX_BASE + 0x68))
 #define IRQ_ENABLE_1      ((volatile unsigned int*)(PERIPHERAL_BASE + 0xb210))
 #define IRQ_DISABLE_1     ((volatile unsigned int*)(PERIPHERAL_BASE + 0xb21C))
-#define UART_BUFFER_SIZE 256  // 定義環形緩衝區大小
+#define UART_BUFFER_SIZE 256  // define buffer size
 
+
+typedef struct {
+    volatile int locked;
+} mutex_t;
+
+
+void mutex_init(mutex_t *mutex);
+void mutex_lock(mutex_t *mutex);
+void mutex_unlock(mutex_t *mutex);
 
 void uart_init(void);
 void uart_send_char(char c);

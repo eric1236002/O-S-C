@@ -1,4 +1,3 @@
-#include <stdint.h>
 #include "uart.h"
 
 // buffer
@@ -12,6 +11,36 @@ struct uart_buffer {
 // buffer
 static struct uart_buffer rx_buffer = {0};
 static struct uart_buffer tx_buffer = {0};
+
+// mutex for protecting buffer
+static mutex_t rx_mutex = {0};
+static mutex_t tx_mutex = {0};
+
+// initialize mutex
+void mutex_init(mutex_t *mutex) {
+    mutex->locked = 0;
+}
+
+// get mutex
+void mutex_lock(mutex_t *mutex) {
+    disable_interrupt();
+    while(mutex->locked) {
+        // if mutex is locked, release interrupt and try again
+        enable_interrupt();
+        // simple delay
+        for(volatile int i = 0; i < 100; i++);
+        disable_interrupt();
+    }
+    mutex->locked = 1;
+    enable_interrupt();
+}
+
+// release mutex
+void mutex_unlock(mutex_t *mutex) {
+    disable_interrupt();
+    mutex->locked = 0;
+    enable_interrupt();
+}
 
 void uart_init(void) {
     register unsigned int r;
@@ -45,6 +74,10 @@ void uart_init(void) {
     // init buffer
     rx_buffer.read_pos = rx_buffer.write_pos = rx_buffer.count = 0;
     tx_buffer.read_pos = tx_buffer.write_pos = tx_buffer.count = 0;
+    
+    // initialize mutex
+    mutex_init(&rx_mutex);
+    mutex_init(&tx_mutex);
 }
 
 void uart_send_char(char c) {
@@ -56,8 +89,8 @@ void uart_send_char(char c) {
 char uart_async_getc() {
     char c = 0;
     
-    // disable interrupt to protect critical section
-    disable_interrupt();
+    // use mutex to protect buffer access
+    mutex_lock(&rx_mutex);
     
     if (rx_buffer.count > 0) {
         c = rx_buffer.data[rx_buffer.read_pos];
@@ -65,13 +98,14 @@ char uart_async_getc() {
         rx_buffer.count--;
     }
     
-    enable_interrupt();
+    mutex_unlock(&rx_mutex);
     return c;
 }
 
 // put a char to buffer
 void uart_async_putc(char c) {
-    disable_interrupt();
+    // use mutex to protect buffer access
+    mutex_lock(&tx_mutex);
     
     // check if buffer is full
     if (tx_buffer.count < UART_BUFFER_SIZE) {
@@ -83,7 +117,7 @@ void uart_async_putc(char c) {
         *AUX_MU_IER |= 0x2;
     }
     
-    enable_interrupt();
+    mutex_unlock(&tx_mutex);
 }
 
 // modify interrupt handler
@@ -94,15 +128,21 @@ void uart_interrupt_handler() {
     // receive interrupt
     if (iir & 0x4) {
         char c = (char)(*AUX_MU_IO);
+        
+        // use mutex to protect rx buffer
+        mutex_lock(&rx_mutex);
         if (rx_buffer.count < UART_BUFFER_SIZE) {
             rx_buffer.data[rx_buffer.write_pos] = c;
             rx_buffer.write_pos = (rx_buffer.write_pos + 1) % UART_BUFFER_SIZE;
             rx_buffer.count++;
         }
+        mutex_unlock(&rx_mutex);
     }
     
     // transmit interrupt
     if (iir & 0x2) {
+        // use mutex to protect tx buffer
+        mutex_lock(&tx_mutex);
         if (tx_buffer.count > 0) {
             *AUX_MU_IO = tx_buffer.data[tx_buffer.read_pos];
             tx_buffer.read_pos = (tx_buffer.read_pos + 1) % UART_BUFFER_SIZE;
@@ -113,6 +153,7 @@ void uart_interrupt_handler() {
         if (tx_buffer.count == 0) {
             *AUX_MU_IER &= ~0x2;
         }
+        mutex_unlock(&tx_mutex);
     }
 }
 
