@@ -41,7 +41,7 @@ void *calculate_address(int index){
     return (void *)(MEM_START + index * PAGE_SIZE);
 }
 
-unsigned int calculate_page_index(page_t *page){
+int calculate_page_index(page_t *page){
     //use the page address to calculate the page index
     return ((unsigned int)page - MEM_START) / PAGE_SIZE;
 }
@@ -150,23 +150,27 @@ void *allocate(unsigned int size) {
         free_array[page_index+i]=ALLOCATED;
     }
 
+
+    //update the order of the page
+    page->order = order;
+    free_list[order] = free_list[order]->next;
+    
+    //calculate the user pointer
+    void* user_ptr = (void*)((unsigned int)page + sizeof(page_t));
     //==============debug==============
     uart_send_string("\n\r[after allocate]");
     print_free_array();
     print_free_list();
     //==============debug==============
-
-    //update the order of the page
-    page->order = order;
-    free_list[order] =free_list[order]->next ;
-
     uart_send_string("\n\r[Page] Allocate ");
     uart_send_hex(page);
-    uart_send_string(" at order ");
+    uart_send_string(" (user: ");
+    uart_send_hex(user_ptr);
+    uart_send_string(") at order ");
     uart_send_int(order);
     uart_send_string(", page index ");
     uart_send_int(page_index);
-    return page;
+    return user_ptr;  //return the user pointer
 }
 void free(void* ptr) {
     uart_send_string("\n\r=========[free] ");
@@ -174,8 +178,14 @@ void free(void* ptr) {
     uart_send_string("=========");
     if (!ptr) return;
     
-    int index = calculate_page_index(ptr);
-    page_t *page = (page_t *)ptr;
+    //calculate the original page pointer
+    void* page_ptr = (void*)((unsigned int)ptr - sizeof(page_t));
+    uart_send_string("\n\r[Original page pointer] ");
+    uart_send_hex(page_ptr);
+    
+    int index = calculate_page_index(page_ptr);
+    page_t *page = (page_t *)page_ptr;
+    
     // check if the memory is allocated
     if (free_array[index] != ALLOCATED) {
         uart_send_string("\n\rError: Trying to free unallocated memory\n\r");
@@ -192,7 +202,7 @@ void free(void* ptr) {
     free_array[index]=order;
     // try to merge
     while (order < MAX_ORDER) {
-        int buddy_index = index ^ (1<<order); //ex: index=0, order=1, buddy_index=2
+        int buddy_index = index ^ (1<<order); //ex: index=0, order=1, buddy_index=1
         
         // check if the buddy is also free and the order is the same
         if (buddy_index >= MAX_PAGES || free_array[buddy_index] != order) {
@@ -202,6 +212,8 @@ void free(void* ptr) {
         // remove the buddy from the free list
         page_t* prev = NULL;
         page_t* curr = free_list[order];
+
+        //find the buddy in the free list
         while (curr && calculate_page_index((void*)curr) != buddy_index) {
             prev = curr;
             curr = curr->next;
@@ -210,20 +222,20 @@ void free(void* ptr) {
         if (!curr) break;  // the buddy is not in the free list
         
         // remove the buddy
-        if (prev) {
+        if (prev) {                     //if current is not the first node
             prev->next = curr->next;
-        } else {
+        } else {                        //if current is the first node
             free_list[order] = curr->next;
         }
         
-        // merge
+        // merge.find the smaller index
         if (buddy_index < index) {
             index = buddy_index;
         }
         
+        //update the order of the page
         order++;
         free_array[index] = order;
-        
         // mark the buddy as belongs to a larger block
         for (int i = 0; i < (1 << (order - 1)); i++) {
             free_array[buddy_index + i] = BELONGS_TO_LARGER;

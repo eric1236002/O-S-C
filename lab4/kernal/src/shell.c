@@ -4,14 +4,15 @@ char input_buffer[MAX_INPUT_LEN];
 char filename_buffer[MAX_INPUT_LEN];
 char size_str[MAX_INPUT_LEN];
 char message_buffer[MAX_INPUT_LEN];
-void initramfs_callback(const char *node_name, const char *property_name, const void *property_value)
+unsigned long initramfs_callback(const char *node_name, const char *property_name, const void *property_value)
 {
     if(strcmp(property_name,"linux,initrd-start")==0){
         initramfs_start = bswap32(*(unsigned long *)property_value);
         uart_send_string("\n\rInitramfs start: ");
         uart_send_hex(initramfs_start);
-        return;
+        return initramfs_start;
     }
+    return 0;
 }
 
 int main() {
@@ -92,6 +93,7 @@ int main() {
             free(ptr0);
             void* ptr3 = allocate(16000);
             free(ptr3);
+            free(ptr2);
         }
         else {
             uart_send_string("\n\rInvalid command\n\r");

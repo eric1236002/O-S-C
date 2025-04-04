@@ -86,7 +86,11 @@ void fdt_traverse(void *fdt,fdt_callback callback)
             // }
 
             if(callback){
-                callback(current_node,current_property,current_value);
+                unsigned long result = callback(current_node,current_property,current_value);
+                if(result != 0){
+                    uart_send_string("\n\rFound target property, exiting traversal\n\r");
+                    return;
+                }
             }
             struct_block += align(len,4);
         }else if(tag == FDT_NOP){

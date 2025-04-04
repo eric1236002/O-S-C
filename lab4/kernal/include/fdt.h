@@ -28,7 +28,7 @@ struct fdt_header {
     uint32_t size_dt_struct;    /* device tree structure size */
 };
 
-typedef void (*fdt_callback)(const char *node_name, const char *property_name, const void *property_value); 
+typedef unsigned long (*fdt_callback)(const char *node_name, const char *property_name, const void *property_value); 
 /* callback function :use to traverse the dtb, 
 this function will be a general function.
 It can have different function name,but the parameter is same, and then it will return different response.
@@ -37,6 +37,6 @@ or you can have a function to get the initramfs address, etc.
 Depend on the callback function what you send to the fdt_traverse, it will return different response.*/
 
 void fdt_traverse(void *dtb_addr, fdt_callback callback);
-void initramfs_callback(const char *node_name, const char *property_name, const void *property_value);
+unsigned long initramfs_callback(const char *node_name, const char *property_name, const void *property_value);
 #endif
 

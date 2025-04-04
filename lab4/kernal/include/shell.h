@@ -10,5 +10,5 @@
 #include "buddy.h"
 extern void *dtb_addr;
 
-extern void initramfs_callback(const char *node_name, const char *property_name, const void *property_value);
+extern unsigned long initramfs_callback(const char *node_name, const char *property_name, const void *property_value);
 #endif
