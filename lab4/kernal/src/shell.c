@@ -37,6 +37,7 @@ int main() {
     unsigned int el = get_el();
     print_el();
     buddy_init();
+    init_pools();
     while (1) { 
         uart_send_string("\n\r# ");
 
@@ -65,11 +66,24 @@ int main() {
             uart_send_string("\n\rEnter size: ");
             unsigned int size = input_int(size_str);
             uart_send_string("\n\r");
-            void* ptr = simple_alloc(size);
-            uart_send_string("Allocated memory at: ");
-            uart_send_hex64((unsigned long)ptr);
+            void* ptr = malloc(size);
+            uart_send_string("\n\rAllocated memory at: ");
+            uart_send_hex((unsigned long)ptr);
             uart_send_string("\n\r");
         } 
+        else if(strcmp(input_buffer, "free") == 0) {
+            uart_send_string("\n\rEnter pointer: ");
+            char hex_buffer[MAX_INPUT_LEN];
+            input_string(hex_buffer);
+            
+            unsigned int address = hextodec(hex_buffer);
+            void* ptr = (void*)address;
+            
+            uart_send_string("\n\rFreeing address: ");
+            uart_send_hex((unsigned long)ptr);
+            uart_send_string("\n\r");
+            free(ptr);
+        }
         else if(strcmp(input_buffer, "exec") == 0) {
             uart_send_string("\n\rEnter filename: ");
             input_string(filename_buffer);
@@ -84,16 +98,43 @@ int main() {
             uart_send_string("\n\r");
             setTimeout(message_buffer, time);
         }
-        else if(strcmp(input_buffer, "alloc") == 0) {
-
-            void* ptr1 = allocate(4000);
+        else if(strcmp(input_buffer, "tb") == 0) {
+            void* ptr11 = malloc(10);
+            void* ptr1 = malloc(4000);
+            uart_send_string("\n\rlocation of ptr1: ");
+            uart_send_hex((unsigned long)ptr1);
             free(ptr1);
-            void* ptr2 = allocate(8000);
-            void* ptr0 = allocate(4000);
+            void* ptr2 = malloc(8000);
+            uart_send_string("\n\rlocation of ptr2: ");
+            uart_send_hex((unsigned long)ptr2);
+            void* ptr0 = malloc(4000);
+            uart_send_string("\n\rlocation of ptr0: ");
+            uart_send_hex((unsigned long)ptr0);
             free(ptr0);
-            void* ptr3 = allocate(16000);
+            void* ptr3 = malloc(16000);
+            uart_send_string("\n\rlocation of ptr3: ");
+            uart_send_hex((unsigned long)ptr3);
+            free(ptr2);
+            free(ptr3);
+        }
+        else if(strcmp(input_buffer, "ts") == 0) {
+            void* ptr1 = malloc(10);
+            void* ptr2 = malloc(30);
+            void* ptr0 = malloc(10);
+            free(ptr0);
+            void* ptr3 = malloc(125);
             free(ptr3);
             free(ptr2);
+            free(ptr1);
+        }
+        else if(strcmp(input_buffer, "pp") == 0) {
+            print_pools();
+        }
+        else if(strcmp(input_buffer, "pfa") == 0) {
+            print_free_array();
+        }
+        else if(strcmp(input_buffer, "pfl") == 0) {
+            print_free_list();
         }
         else {
             uart_send_string("\n\rInvalid command\n\r");

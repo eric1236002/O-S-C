@@ -2,16 +2,23 @@
 
 int hextodec(const char *hex) {
     int result = 0;
+    int i = 0;
     
-    // 處理所有 8 位數字
-    for(int i = 0; i < 8; i++) {
-        char c = hex[i];
+    // skip the 0x or 0X
+    if (hex[0] == '0' && (hex[1] == 'x' || hex[1] == 'X')) {
+        i = 2;
+    }
+    
+    while (hex[i] != '\0') {
+        char c = hex[i++];
         if (c >= '0' && c <= '9') {
             result = (result << 4) | (c - '0');
         } else if (c >= 'a' && c <= 'f') {
             result = (result << 4) | (c - 'a' + 10);
         } else if (c >= 'A' && c <= 'F') {
             result = (result << 4) | (c - 'A' + 10);
+        } else {
+            break;
         }
     }
     
@@ -61,9 +68,19 @@ void input_string(char *input_buffer) {
         if (c == '\n' || c == '\r') {
             break;
         }
-        uart_send_char(c);
-        if (i < MAX_INPUT_LEN - 1) {
-            input_buffer[i++] = c;
+        
+        if (c == '\b' || c == 0x7F) {
+            if (i > 0) {
+                i--;
+                uart_send_char('\b');
+                uart_send_char(' ');
+                uart_send_char('\b');
+            }
+        } else {
+            uart_send_char(c);
+            if (i < MAX_INPUT_LEN - 1) {
+                input_buffer[i++] = c;
+            }
         }
     }
     input_buffer[i] = '\0';
@@ -72,6 +89,11 @@ void input_string(char *input_buffer) {
 unsigned int input_int(char *input_buffer) {
     input_string(input_buffer);
     return my_atoi(input_buffer);
+}
+
+char* input_hex(char *input_buffer) {
+    input_string(input_buffer);
+    return input_buffer;
 }
 
 unsigned int my_atoi(const char *str) {

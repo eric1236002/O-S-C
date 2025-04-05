@@ -11,6 +11,10 @@ unsigned long align(unsigned long num, unsigned long alignment);
 void input_string(char *input_buffer);
 unsigned int my_atoi(const char *str);
 unsigned int input_int(char *input_buffer);
+char* input_hex(char *input_buffer);
 unsigned int string_len(const char *str);
 char* itoa(int num, int base);
+char* strcpy(char* dest, const char* src);
+char *utohx(unsigned int num);
+
 #endif
