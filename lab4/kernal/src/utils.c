@@ -153,3 +153,31 @@ char* strcpy(char* dest, const char* src){
     *dest='\0';
     return original_dest;
 }
+
+// initialize mutex
+void mutex_init(mutex_t *mutex) {
+    mutex->locked = 0;
+}
+
+// get mutex
+void mutex_lock(mutex_t *mutex) {
+    disable_interrupt();
+    uart_send_string("\n\rmutex locked");
+    while(mutex->locked) {
+        // if mutex is locked, release interrupt and try again
+        enable_interrupt();
+        // simple delay
+        for(volatile int i = 0; i < 100; i++);
+        disable_interrupt();
+    }
+    mutex->locked = 1;
+    enable_interrupt();
+}
+
+// release mutex
+void mutex_unlock(mutex_t *mutex) {
+    disable_interrupt();
+    mutex->locked = 0;
+    enable_interrupt();
+    uart_send_string("\n\rmutex unlocked");
+}

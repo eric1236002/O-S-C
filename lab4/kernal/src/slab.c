@@ -1,5 +1,8 @@
 #include "slab.h"
 
+// mutex for protecting buffer
+static mutex_t slab_mutex = {0};
+
 pool_t pools[NUM_POOLS];
 void print_pools(){
     uart_send_string("\n\r[pools]");
@@ -36,17 +39,19 @@ void init_pools() {
         pools[i].free_list = NULL;
         pools[i].pages = NULL;
     }
+    mutex_init(&slab_mutex);
 }
 
 void *malloc(unsigned int size) {
+    mutex_lock(&slab_mutex);
     uart_send_string("\n\r=...===...===..malloc ");
     uart_send_int(size);
     uart_send_string("=...===...===..\n\r");
     if (size > MAX_SIZE) {
         uart_send_string("\n\rfallback to buddy allocator (size > MAX_SIZE)");
+        mutex_unlock(&slab_mutex);
         return allocate_page(size);  // fallback to buddy allocator
     }
-
     int pool_index = find_pool(size);
     //==========debug==========
     uart_send_string("\n\rsize: ");
@@ -60,6 +65,7 @@ void *malloc(unsigned int size) {
 
     if (pool_index == -1) {
         uart_send_string("\n\rfallback to buddy allocator (no suitable pool)");
+        mutex_unlock(&slab_mutex);
         return allocate_page(size);  // fallback to buddy allocator
     }
 
@@ -112,7 +118,7 @@ void *malloc(unsigned int size) {
     uart_send_string("\n\rallocate a chunk from the free list :");
     uart_send_hex((unsigned long)chunk);
     uart_send_string("\n\r");
-    
+    mutex_unlock(&slab_mutex);
     return (void *)chunk;
 }
 
@@ -123,12 +129,15 @@ void free(void *ptr) {
     uart_send_string("=~~~~~~~~~=\n\r");
     //==========debug==========
     if (!ptr) {
+        uart_send_string("\n\rInvalid page pointer");
         return;
     }
 
+    mutex_lock(&slab_mutex);
     // check if the pointer is in the valid memory range
     if ((unsigned int)ptr < MEM_START || (unsigned int)ptr >= MEM_END) {
         uart_send_string("\n\rInvalid pointer - out of memory range");
+        mutex_unlock(&slab_mutex);
         return;
     }
 
@@ -139,12 +148,17 @@ void free(void *ptr) {
     if (address == page_addr) {
         uart_send_string("\n\rfallback to buddy free (page aligned address)");
         free_page(ptr);
+        mutex_unlock(&slab_mutex);
         return;
     }
     
     // try to interpret the page start address as slab_page_t
     slab_page_t *page = (slab_page_t *)page_addr;
-    
+    if (!page) {
+        uart_send_string("\n\rInvalid page pointer");
+        mutex_unlock(&slab_mutex);
+        return;
+    }
     
     unsigned int pool_index = page->pool_index;
 
@@ -152,6 +166,7 @@ void free(void *ptr) {
     // if the pool_index is out of range, it means this is allocated by buddy allocator
     if (page->pool_index >= NUM_POOLS || pools[pool_index].count == 0) {
         uart_send_string("\n\rfallback to buddy free");
+        mutex_unlock(&slab_mutex);
         free_page(ptr);
         return;
     }
@@ -165,8 +180,7 @@ void free(void *ptr) {
     pool->free_list = chunk;
     pool->count--;
     
-    uart_send_string("\n\r[After free] Pool count: ");
-    uart_send_int(pool->count);
+
     
     //if the pool is empty, free the page
     if (pool->count == 0) {
@@ -181,12 +195,20 @@ void free(void *ptr) {
             }
             if (current) {
                 current->next = page->next;
+            } else {
+                uart_send_string("\n\rWarning: Page not found in pool's page list");
+                mutex_unlock(&slab_mutex);
+                return;
             }
         }
         pool->free_list = NULL;
         
-        // free the page
+        mutex_unlock(&slab_mutex);
         free_page((void *)page);
+        return;
     }
+    uart_send_string("\n\r[After free] Pool count: ");
+    uart_send_int(pool->count);
+    mutex_unlock(&slab_mutex);
 }
 

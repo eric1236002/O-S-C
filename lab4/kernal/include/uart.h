@@ -28,15 +28,8 @@
 #define IRQ_DISABLE_1     ((volatile unsigned int*)(PERIPHERAL_BASE + 0xb21C))
 #define UART_BUFFER_SIZE 256  // define buffer size
 
+#include "utils.h"
 
-typedef struct {
-    volatile int locked;
-} mutex_t;
-
-
-void mutex_init(mutex_t *mutex);
-void mutex_lock(mutex_t *mutex);
-void mutex_unlock(mutex_t *mutex);
 
 void uart_init(void);
 void uart_send_char(char c);

@@ -1,5 +1,7 @@
 #include "buddy.h"
 
+static mutex_t buddy_mutex = {0};
+
 page_t *free_list[MAX_ORDER];
 int free_array[MAX_PAGES];
 
@@ -62,13 +64,14 @@ void buddy_init(){
     // initialize the first page
     page_t *init_page = (page_t *)MEM_START;
     init_page->next = NULL;
-    init_page->next->next = NULL;
     free_list[MAX_ORDER-1] = init_page;
 
     print_free_array();
+    mutex_init(&buddy_mutex);
 
 }
 void *allocate_page(unsigned int size) {
+    mutex_lock(&buddy_mutex);
     uart_send_string("\n\r=========[allocate size] ");
     uart_send_int(size);
     uart_send_string("=========");
@@ -84,7 +87,9 @@ void *allocate_page(unsigned int size) {
         if(free_list[current_order]!=NULL){         //check if the free list is not empty(already split the page)
             page=free_list[current_order];
             free_list[current_order]=page->next;    //remove the page from the free list[current_order] 
-                                                    //ex: free_list[1]: [block@0] -> [block@2] -> NULL ===> free_list[1]: [block@2] -> NULL
+            if(current_order==MAX_ORDER-1){
+                free_list[current_order]->next=NULL;    //remove the page from the free list[current_order]                                         
+            }
             break;
         }
         current_order++;
@@ -169,13 +174,18 @@ void *allocate_page(unsigned int size) {
     uart_send_int(order);
     uart_send_string(", page index ");
     uart_send_int(page_index);
+    mutex_unlock(&buddy_mutex);
     return user_ptr;  //return the user pointer
 }
 void free_page(void* ptr) {
+    mutex_lock(&buddy_mutex);
     uart_send_string("\n\r=========[free] ");
     uart_send_hex(ptr);
     uart_send_string("=========");
-    if (!ptr) return;
+    if (!ptr) {
+        mutex_unlock(&buddy_mutex);
+        return;
+    }
     
     //calculate the original page pointer
     void* page_ptr = (void*)(unsigned int)ptr;
@@ -192,6 +202,7 @@ void free_page(void* ptr) {
         uart_send_string("\n\r[free_array]");
         print_free_array();
         //==============debug==============
+        mutex_unlock(&buddy_mutex);
         return;
     }
     
@@ -233,7 +244,9 @@ void free_page(void* ptr) {
         
         // merge.find the smaller index
         if (buddy_index < index) {
-            index = buddy_index;
+            buddy_index = buddy_index ^ index;
+            index = buddy_index ^ index;
+            buddy_index =  buddy_index ^ index;
         }
         
         //update the order of the page
@@ -249,7 +262,7 @@ void free_page(void* ptr) {
         uart_send_int(index);
         uart_send_string(" with buddy ");
         uart_send_int(buddy_index);
-        uart_send_string(" to form page ");
+        uart_send_string(" . From page ");
         uart_send_int(index);
         uart_send_string(" to order ");
         uart_send_int(order);
@@ -273,5 +286,6 @@ void free_page(void* ptr) {
     uart_send_string(" from order ");
     uart_send_int(order);
     uart_send_string(".");
+    mutex_unlock(&buddy_mutex);
 }
 
