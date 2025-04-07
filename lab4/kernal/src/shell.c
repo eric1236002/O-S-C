@@ -126,6 +126,7 @@ int main() {
             free(ptr3);
             free(ptr2);
             free(ptr1);
+            free(ptr0);
         }
         else if(strcmp(input_buffer, "pp") == 0) {
             print_pools();

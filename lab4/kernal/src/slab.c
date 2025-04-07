@@ -11,7 +11,7 @@ void print_pools(){
         uart_send_string(" : ");
         uart_send_int(pools[i].count);
         uart_send_string(" : ");
-        uart_send_hex((unsigned long)pools[i].free_list-pool_sizes[i]-sizeof(chunk_t));
+        uart_send_hex((unsigned long)pools[i].free_list);
         uart_send_string(" : ");
         uart_send_hex((unsigned long)pools[i].pages);
         uart_send_string("\n\r");
@@ -53,6 +53,12 @@ void *malloc(unsigned int size) {
         return allocate_page(size);  // fallback to buddy allocator
     }
     int pool_index = find_pool(size);
+    if (pool_index == -1) {
+        uart_send_string("\n\rfallback to buddy allocator (no suitable pool)");
+        mutex_unlock(&slab_mutex);
+        return allocate_page(size);  // fallback to buddy allocator
+    }
+
     //==========debug==========
     uart_send_string("\n\rsize: ");
     uart_send_int(size);
@@ -63,11 +69,6 @@ void *malloc(unsigned int size) {
     uart_send_string("\n\r");
     //==========debug==========
 
-    if (pool_index == -1) {
-        uart_send_string("\n\rfallback to buddy allocator (no suitable pool)");
-        mutex_unlock(&slab_mutex);
-        return allocate_page(size);  // fallback to buddy allocator
-    }
 
     pool_t *pool = &pools[pool_index];
 
@@ -119,7 +120,7 @@ void *malloc(unsigned int size) {
     uart_send_hex((unsigned long)chunk);
     uart_send_string("\n\r");
     mutex_unlock(&slab_mutex);
-    return (void *)chunk;
+    return (void *)((char *)chunk + sizeof(chunk_t));
 }
 
 void free(void *ptr) {
@@ -175,7 +176,7 @@ void free(void *ptr) {
 
     
     // put the chunk back to the free list
-    chunk_t *chunk = (chunk_t *)ptr;
+    chunk_t *chunk = (chunk_t *)((char *)ptr - sizeof(chunk_t));
     chunk->next = pool->free_list;
     pool->free_list = chunk;
     pool->count--;

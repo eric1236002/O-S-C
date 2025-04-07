@@ -2,7 +2,7 @@
 #define BUDDY_H_
 #include "uart.h"
 
-#define MAX_ORDER 4                // because kernal usually manage 4MB
+#define MAX_ORDER 11                // because kernal usually manage 4MB
 #define MEM_START 0x10000000        // 256MB
 #define MEM_END 0x20000000          // 512MB
 #define PAGE_SIZE 4096
@@ -13,6 +13,7 @@
 #define ALLOCATED -1                // <X> represents allocated
 #define BELONGS_TO_LARGER -2        // <F> represents belongs to larger
 typedef struct page {
+    struct page *prev;
     struct page* next;
 } page_t;
 
