@@ -16,31 +16,7 @@ static struct uart_buffer tx_buffer = {0};
 static mutex_t rx_mutex = {0};
 static mutex_t tx_mutex = {0};
 
-// initialize mutex
-void mutex_init(mutex_t *mutex) {
-    mutex->locked = 0;
-}
 
-// get mutex
-void mutex_lock(mutex_t *mutex) {
-    disable_interrupt();
-    while(mutex->locked) {
-        // if mutex is locked, release interrupt and try again
-        enable_interrupt();
-        // simple delay
-        for(volatile int i = 0; i < 100; i++);
-        disable_interrupt();
-    }
-    mutex->locked = 1;
-    enable_interrupt();
-}
-
-// release mutex
-void mutex_unlock(mutex_t *mutex) {
-    disable_interrupt();
-    mutex->locked = 0;
-    enable_interrupt();
-}
 
 void uart_init(void) {
     register unsigned int r;

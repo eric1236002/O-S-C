@@ -13,6 +13,7 @@
 #define ALLOCATED -1                // <X> represents allocated
 #define BELONGS_TO_LARGER -2        // <F> represents belongs to larger
 typedef struct page {
+    struct page *prev;
     struct page* next;
 } page_t;
 

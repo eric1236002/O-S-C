@@ -62,7 +62,8 @@ int main() {
             input_string(filename_buffer);
             uart_send_string("\n\r");
             cpio_cat(filename_buffer,initramfs_start);
-        } else if(strcmp(input_buffer, "malloc") == 0) {
+        } 
+        else if(strcmp(input_buffer, "malloc") == 0) {
             uart_send_string("\n\rEnter size: ");
             unsigned int size = input_int(size_str);
             uart_send_string("\n\r");
@@ -121,19 +122,23 @@ int main() {
             void* ptr1 = malloc(10);
             void* ptr2 = malloc(30);
             void* ptr0 = malloc(10);
-            free(ptr0);
             void* ptr3 = malloc(125);
             free(ptr3);
             free(ptr2);
             free(ptr1);
+            free(ptr0);
         }
         else if(strcmp(input_buffer, "pp") == 0) {
             print_pools();
         }
         else if(strcmp(input_buffer, "pfa") == 0) {
+            uart_send_string("\n\r");
+            uart_send_string("free_array: ");
             print_free_array();
         }
         else if(strcmp(input_buffer, "pfl") == 0) {
+            uart_send_string("\n\r");
+            uart_send_string("free_list: ");
             print_free_list();
         }
         else {

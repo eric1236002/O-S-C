@@ -30,7 +30,7 @@ break cpio_load_program
 #break *0x83940
 #break *0x8393c
 #break *0x20000c
-break *0x83ce8
+#break *0x83ce8
 #break process_timers
 break add_timer
 # 設置調試輸出

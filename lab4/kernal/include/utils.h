@@ -5,6 +5,15 @@
 
 #define MAX_INPUT_LEN 256
 
+typedef struct {
+    volatile int locked;
+} mutex_t;
+
+
+void mutex_init(mutex_t *mutex);
+void mutex_lock(mutex_t *mutex);
+void mutex_unlock(mutex_t *mutex);
+
 int hextodec(const char *hex);
 int strcmp(const char *str1, const char *str2);
 unsigned long align(unsigned long num, unsigned long alignment);
