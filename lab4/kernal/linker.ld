@@ -1,6 +1,7 @@
 SECTIONS
 {
     . = 0x80000;
+    _start = .;
     .text.boot : { *(.text.boot) }
     .text : { *(.text) }
     .rodata : { *(.rodata) }
@@ -11,4 +12,5 @@ SECTIONS
         *(.bss*) 
         bss_end = .;
     }
+    _end = .;
 }

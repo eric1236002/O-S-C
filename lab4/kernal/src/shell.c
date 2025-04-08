@@ -118,6 +118,9 @@ int main() {
             free(ptr2);
             free(ptr3);
         }
+        else if(strcmp(input_buffer, "rs") == 0) {
+            memory_reserve((void*)0x10001000, (void*)0x10002000);
+        }
         else if(strcmp(input_buffer, "ts") == 0) {
             void* ptr1 = malloc(10);
             void* ptr2 = malloc(30);
@@ -140,6 +143,15 @@ int main() {
             uart_send_string("\n\r");
             uart_send_string("free_list: ");
             print_free_list();
+        }
+        else if(strcmp(input_buffer, "memstat") == 0) {
+            uart_send_string("\n\rMemory Allocation Status:\n\r");
+            uart_send_string("Free Array:\n\r");
+            print_free_array();
+            uart_send_string("\n\rFree List:\n\r");
+            print_free_list();
+            uart_send_string("\n\rSlab Pools:\n\r");
+            print_pools();
         }
         else {
             uart_send_string("\n\rInvalid command\n\r");

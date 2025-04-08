@@ -69,6 +69,7 @@ void buddy_init(){
     free_list[MAX_ORDER-1] = init_page;
 
     print_free_array();
+    print_free_list();
     mutex_init(&buddy_mutex);
 
 }
@@ -270,4 +271,79 @@ void free_page(void* ptr) {
     uart_send_int(order);
     uart_send_string(".");
     mutex_unlock(&buddy_mutex);
+}
+void memory_reserve(void *start, void *end) {
+    uart_send_string("\n\r=========[memory_reserve] ");
+    uart_send_hex(start);
+    uart_send_string(" - ");
+    uart_send_hex(end);
+    uart_send_string("=========");
+
+    if (start < (void *)MEM_START) 
+        start = (void *)MEM_START;
+    if (end > (void *)MEM_END) 
+        end = (void *)MEM_END;
+
+    if(end <= MEM_START){
+        uart_send_string("\n\r[Warning] end <= MEM_START");
+        return;
+    }
+    if(start >= MEM_END){
+        uart_send_string("\n\r[Warning] start >= MEM_END");
+        return;
+    }
+
+    unsigned int start_addr = (unsigned int)start;
+    unsigned int end_addr = (unsigned int)end;
+
+    unsigned int aligned_start = (start_addr / PAGE_SIZE) * PAGE_SIZE;
+    unsigned int num = (end_addr + PAGE_SIZE - 1) / PAGE_SIZE;
+    if(num==0){
+        num=1;
+    }
+    unsigned int aligned_end = num * PAGE_SIZE;
+
+    uart_send_string("\n\r[Aligned] ");
+    uart_send_hex(aligned_start);
+    uart_send_string(" - "); 
+    uart_send_hex(aligned_end);
+    
+    unsigned int num_pages = (aligned_end - aligned_start) / PAGE_SIZE;
+    
+    if (num_pages == 0) {
+        uart_send_string("\n\r[Warning] No pages to reserve");
+        return;
+    }
+    
+    uart_send_string("\n\r[Reserving] ");
+    uart_send_int(num_pages);
+    uart_send_string(" pages");
+
+
+    unsigned int ptr_addr[1<<MAX_ORDER];
+    int i = 0;
+
+    for (unsigned int addr = MEM_START; addr < aligned_end;) {
+        void *temp=allocate_page(PAGE_SIZE);
+        if (temp == NULL) {
+            uart_send_string("\n\r[Error] Failed to allocate pages");
+            mutex_unlock(&buddy_mutex);
+            return;
+        }
+        
+        if ((unsigned int)temp < aligned_start || (unsigned int)temp >= aligned_end) {
+            ptr_addr[i] = (unsigned int)temp;
+            i++;
+        } else {
+            uart_send_string("\n\r[Reserved] Page at ");
+            uart_send_hex((unsigned int)temp);
+        }
+        addr=(unsigned int)temp;
+    }
+
+    for (int j = 0; j < i; j++) {
+        free_page((void *)ptr_addr[j]);
+    }
+    mutex_unlock(&buddy_mutex);
+    uart_send_string("\n\r[Memory reservation completed]");
 }

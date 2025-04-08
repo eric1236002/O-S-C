@@ -2,7 +2,7 @@
 #define BUDDY_H_
 #include "uart.h"
 
-#define MAX_ORDER 11                // because kernal usually manage 4MB
+#define MAX_ORDER 11               // because kernal usually manage 4MB 
 #define MEM_START 0x10000000        // 256MB
 #define MEM_END 0x20000000          // 512MB
 #define PAGE_SIZE 4096
@@ -24,5 +24,5 @@ extern int free_array[MAX_PAGES];      // number of free pages. The size of free
 void *allocate_page(unsigned int size);
 void free_page(void *ptr);
 void buddy_init();
-
+void memory_reserve(void *start, void *end);
 #endif
