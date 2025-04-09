@@ -1,5 +1,9 @@
 #include "cpio.h"
 
+void cpio_init(unsigned long initramfs_start,unsigned long initramfs_end) {
+
+    memory_reserve((void*)initramfs_start, (void*)(initramfs_end));
+}
 
 void cpio_ls(unsigned long initramfs_start) {
     uart_send_string("\n\rListing files:\n");

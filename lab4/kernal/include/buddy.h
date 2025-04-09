@@ -2,9 +2,9 @@
 #define BUDDY_H_
 #include "uart.h"
 
-#define MAX_ORDER 11               // because kernal usually manage 4MB 
-#define MEM_START 0x10000000        // 256MB
-#define MEM_END 0x20000000          // 512MB
+#define MAX_ORDER 4               // because kernal usually manage 8MB 
+#define MEM_START 0x07000000        // 256MB
+#define MEM_END MEM_START+(1<<MAX_ORDER-1)*PAGE_SIZE          // 512MB
 #define PAGE_SIZE 4096
 #define MAX_PAGES (1<<MAX_ORDER-1)
 #define NULL ((void*)0)

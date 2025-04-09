@@ -4,15 +4,21 @@ char input_buffer[MAX_INPUT_LEN];
 char filename_buffer[MAX_INPUT_LEN];
 char size_str[MAX_INPUT_LEN];
 char message_buffer[MAX_INPUT_LEN];
-unsigned long initramfs_callback(const char *node_name, const char *property_name, const void *property_value)
+
+void initramfs_callback(const char *node_name, const char *property_name, const void *property_value)
 {
     if(strcmp(property_name,"linux,initrd-start")==0){
         initramfs_start = bswap32(*(unsigned long *)property_value);
         uart_send_string("\n\rInitramfs start: ");
         uart_send_hex(initramfs_start);
-        return initramfs_start;
+
     }
-    return 0;
+    if(strcmp(property_name,"linux,initrd-end")==0){
+        initramfs_end = bswap32(*(unsigned long *)property_value);
+        uart_send_string("\n\rInitramfs end: ");
+        uart_send_hex(initramfs_end);
+    }
+    return;
 }
 
 int main() {
@@ -32,12 +38,29 @@ int main() {
     }
     uart_send_string("\n");
 
-    fdt_traverse(dtb_addr,initramfs_callback);
-
     unsigned int el = get_el();
     print_el();
     buddy_init();
+
+    uart_send_string("\n\r[OS] Pre-allocating critical memory regions...\n\r");
+
+    uart_send_string("[OS] Reserved kernel code region\n\r");
+    extern char _start, _end;
+    memory_reserve(&_start, &_end);
+
+
+
+    uart_send_string("\n\r[OS] Reserved initramfs region\n\r");
+    fdt_traverse(dtb_addr, initramfs_callback);
+    cpio_init(initramfs_start,initramfs_end);
+    
+
+    uart_send_string("\n\r[OS] Reserved kernel heap region");
+    memory_reserve((void*)0x10000000, (void*)0x10010000);
+
+
     init_pools();
+    
     while (1) { 
         uart_send_string("\n\r# ");
 
@@ -52,6 +75,7 @@ int main() {
             uart_send_string("malloc :allocate memory\n\r");
             uart_send_string("timer  :set timer to send message\n\r");
             uart_send_string("alloc  :test allocate memory\n\r");
+            uart_send_string("memstat:show memory allocation status\n\r");
         } else if(strcmp(input_buffer, "reboot") == 0) {
             uart_send_string("\n\rReboot\n\r");
             reset(100);
@@ -119,7 +143,7 @@ int main() {
             free(ptr3);
         }
         else if(strcmp(input_buffer, "rs") == 0) {
-            memory_reserve((void*)0x10001000, (void*)0x10002000);
+            memory_reserve((void*)0x08000000, (void*)0x08100000);
         }
         else if(strcmp(input_buffer, "ts") == 0) {
             void* ptr1 = malloc(10);

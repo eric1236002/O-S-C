@@ -4,21 +4,14 @@ int hextodec(const char *hex) {
     int result = 0;
     int i = 0;
     
-    // skip the 0x or 0X
-    if (hex[0] == '0' && (hex[1] == 'x' || hex[1] == 'X')) {
-        i = 2;
-    }
-    
-    while (hex[i] != '\0') {
-        char c = hex[i++];
+    for(int i = 0; i < 8; i++) {
+        char c = hex[i];
         if (c >= '0' && c <= '9') {
             result = (result << 4) | (c - '0');
         } else if (c >= 'a' && c <= 'f') {
             result = (result << 4) | (c - 'a' + 10);
         } else if (c >= 'A' && c <= 'F') {
             result = (result << 4) | (c - 'A' + 10);
-        } else {
-            break;
         }
     }
     
@@ -162,7 +155,7 @@ void mutex_init(mutex_t *mutex) {
 // get mutex
 void mutex_lock(mutex_t *mutex) {
     disable_interrupt();
-    uart_send_string("\n\rmutex locked");
+    // uart_send_string("\n\rmutex locked");
     while(mutex->locked) {
         // if mutex is locked, release interrupt and try again
         enable_interrupt();
@@ -179,5 +172,5 @@ void mutex_unlock(mutex_t *mutex) {
     disable_interrupt();
     mutex->locked = 0;
     enable_interrupt();
-    uart_send_string("\n\rmutex unlocked");
+    // uart_send_string("\n\rmutex unlocked");
 }

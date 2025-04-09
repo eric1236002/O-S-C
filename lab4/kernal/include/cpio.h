@@ -3,8 +3,8 @@
 #include "uart.h"
 #include "utils.h"
 #include "fdt.h"
+#include "buddy.h"
 
-extern unsigned long initramfs_start;
 #define USTACK_SIZE 0x2000
 #define PROGRAM_ADDR 0x200000
 struct cpio_newc_header {
@@ -24,6 +24,7 @@ struct cpio_newc_header {
    char    c_check[8];
  };
 
+void cpio_init(unsigned long initramfs_start,unsigned long initramfs_end);
 void cpio_ls(unsigned long initramfs_start);
 void cpio_cat(char *filename,unsigned long initramfs_start);
 void cpio_load_program(char *filename,unsigned long initramfs_start);

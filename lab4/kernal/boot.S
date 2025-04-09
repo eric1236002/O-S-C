@@ -15,8 +15,9 @@ memzero:
 master:
     bl     from_el2_to_el1
     bl     set_exception_vector_table
-    adr    x5, bss_begin
-    adr    x1, bss_end
+    
+    ldr    x5, =bss_begin
+    ldr    x1, =bss_end
     sub    x1, x1, x5
     bl     memzero
 

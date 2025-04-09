@@ -1,7 +1,5 @@
 #include "fdt.h"
 
-unsigned long initramfs_start = 0;
-
 /*
 struct of DTB
 
@@ -86,11 +84,7 @@ void fdt_traverse(void *fdt,fdt_callback callback)
             // }
 
             if(callback){
-                unsigned long result = callback(current_node,current_property,current_value);
-                if(result != 0){
-                    uart_send_string("\n\rFound target property, exiting traversal\n\r");
-                    return;
-                }
+                callback(current_node,current_property,current_value);
             }
             struct_block += align(len,4);
         }else if(tag == FDT_NOP){

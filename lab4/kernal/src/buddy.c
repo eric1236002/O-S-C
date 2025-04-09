@@ -75,9 +75,9 @@ void buddy_init(){
 }
 void *allocate_page(unsigned int size) {
     mutex_lock(&buddy_mutex);
-    uart_send_string("\n\r=========[allocate size] ");
-    uart_send_int(size);
-    uart_send_string("=========");
+    // uart_send_string("\n\r=========[allocate size] ");
+    // uart_send_int(size);
+    // uart_send_string("=========");
     int order=calculate_order(size);                //calculate the order of the allocated page
 
 
@@ -136,11 +136,11 @@ void *allocate_page(unsigned int size) {
         free_list[lower_order] = buddy;
 
         //print the split page
-        uart_send_string("\n\r[+] Add page ");
-        uart_send_int(buddy_index);
-        uart_send_string(" to current_order ");
-        uart_send_int(current_order);
-        uart_send_string(".");
+        // uart_send_string("\n\r[+] Add page ");
+        // uart_send_int(buddy_index);
+        // uart_send_string(" to current_order ");
+        // uart_send_int(current_order);
+        // uart_send_string(".");
 
         current_order--;
     }
@@ -156,26 +156,26 @@ void *allocate_page(unsigned int size) {
     //calculate the user pointer
     void* user_ptr = (void*)(unsigned int)page;
     //==============debug==============
-    uart_send_string("\n\r[after allocate]");
-    print_free_array();
-    print_free_list();
+    // uart_send_string("\n\r[after allocate]");
+    // print_free_array();
+    // print_free_list();
     //==============debug==============
-    uart_send_string("\n\r[Page] Allocate ");
-    uart_send_hex(page);
-    uart_send_string(" (user: ");
-    uart_send_hex(user_ptr);
-    uart_send_string(") at order ");
-    uart_send_int(order);
-    uart_send_string(", page index ");
-    uart_send_int(page_index);
+    // uart_send_string("\n\r[Page] Allocate ");
+    // uart_send_hex(page);
+    // uart_send_string(" (user: ");
+    // uart_send_hex(user_ptr);
+    // uart_send_string(") at order ");
+    // uart_send_int(order);
+    // uart_send_string(", page index ");
+    // uart_send_int(page_index);
     mutex_unlock(&buddy_mutex);
     return user_ptr;  //return the user pointer
 }
 void free_page(void* ptr) {
     mutex_lock(&buddy_mutex);
-    uart_send_string("\n\r=========[free] ");
-    uart_send_hex(ptr);
-    uart_send_string("=========");
+    // uart_send_string("\n\r=========[free] ");
+    // uart_send_hex(ptr);
+    // uart_send_string("=========");
     if (!ptr) {
         mutex_unlock(&buddy_mutex);
         return;
@@ -183,8 +183,8 @@ void free_page(void* ptr) {
     
     //calculate the original page pointer
     void* page_ptr = (void*)(unsigned int)ptr;
-    uart_send_string("\n\r[Original page pointer] ");
-    uart_send_hex(page_ptr);
+    // uart_send_string("\n\r[Original page pointer] ");
+    // uart_send_hex(page_ptr);
     
     int index = calculate_page_index(page_ptr);
     page_t *page = (page_t *)page_ptr;
@@ -237,15 +237,15 @@ void free_page(void* ptr) {
 
         
         // print the merge log
-        uart_send_string("\n\r[Merge] Merged page ");
-        uart_send_int(index);
-        uart_send_string(" with buddy ");
-        uart_send_int(buddy_index);
-        uart_send_string(" . From page ");
-        uart_send_int(index);
-        uart_send_string(" to order ");
-        uart_send_int(order);
-        uart_send_string(".");
+        // uart_send_string("\n\r[Merge] Merged page ");
+        // uart_send_int(index);
+        // uart_send_string(" with buddy ");
+        // uart_send_int(buddy_index);
+        // uart_send_string(" . From page ");
+        // uart_send_int(index);
+        // uart_send_string(" to order ");
+        // uart_send_int(order);
+        // uart_send_string(".");
     }
     
     // add the merged block to the free list
@@ -259,17 +259,17 @@ void free_page(void* ptr) {
     free_list[order] = block;
 
     //==============debug==============
-    uart_send_string("\n\r[after allocate]");
-    print_free_array();
-    print_free_list();
+    // uart_send_string("\n\r[after allocate]");
+    // print_free_array();
+    // print_free_list();
     //==============debug==============
     
     // print the free log
-    uart_send_string("\n\r[-] Remove page index ");
-    uart_send_int(index);
-    uart_send_string(" from order ");
-    uart_send_int(order);
-    uart_send_string(".");
+    // uart_send_string("\n\r[-] Remove page index ");
+    // uart_send_int(index);
+    // uart_send_string(" from order ");
+    // uart_send_int(order);
+    // uart_send_string(".");
     mutex_unlock(&buddy_mutex);
 }
 void memory_reserve(void *start, void *end) {
@@ -278,7 +278,11 @@ void memory_reserve(void *start, void *end) {
     uart_send_string(" - ");
     uart_send_hex(end);
     uart_send_string("=========");
-
+    uart_send_string("\n\r=========[edge]");
+    uart_send_hex(MEM_START);
+    uart_send_string(" - ");
+    uart_send_hex(MEM_END);
+    uart_send_string("=========");
     if (start < (void *)MEM_START) 
         start = (void *)MEM_START;
     if (end > (void *)MEM_END) 
@@ -340,7 +344,7 @@ void memory_reserve(void *start, void *end) {
         }
         addr=(unsigned int)temp;
     }
-
+    
     for (int j = 0; j < i; j++) {
         free_page((void *)ptr_addr[j]);
     }
