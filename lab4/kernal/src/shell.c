@@ -75,7 +75,6 @@ int main() {
             uart_send_string("malloc :allocate memory\n\r");
             uart_send_string("timer  :set timer to send message\n\r");
             uart_send_string("alloc  :test allocate memory\n\r");
-            uart_send_string("memstat:show memory allocation status\n\r");
         } else if(strcmp(input_buffer, "reboot") == 0) {
             uart_send_string("\n\rReboot\n\r");
             reset(100);
@@ -123,37 +122,8 @@ int main() {
             uart_send_string("\n\r");
             setTimeout(message_buffer, time);
         }
-        else if(strcmp(input_buffer, "tb") == 0) {
-            void* ptr11 = malloc(10);
-            void* ptr1 = malloc(4000);
-            uart_send_string("\n\rlocation of ptr1: ");
-            uart_send_hex((unsigned long)ptr1);
-            free(ptr1);
-            void* ptr2 = malloc(8000);
-            uart_send_string("\n\rlocation of ptr2: ");
-            uart_send_hex((unsigned long)ptr2);
-            void* ptr0 = malloc(4000);
-            uart_send_string("\n\rlocation of ptr0: ");
-            uart_send_hex((unsigned long)ptr0);
-            free(ptr0);
-            void* ptr3 = malloc(16000);
-            uart_send_string("\n\rlocation of ptr3: ");
-            uart_send_hex((unsigned long)ptr3);
-            free(ptr2);
-            free(ptr3);
-        }
         else if(strcmp(input_buffer, "rs") == 0) {
             memory_reserve((void*)0x08000000, (void*)0x08100000);
-        }
-        else if(strcmp(input_buffer, "ts") == 0) {
-            void* ptr1 = malloc(10);
-            void* ptr2 = malloc(30);
-            void* ptr0 = malloc(10);
-            void* ptr3 = malloc(125);
-            free(ptr3);
-            free(ptr2);
-            free(ptr1);
-            free(ptr0);
         }
         else if(strcmp(input_buffer, "pp") == 0) {
             print_pools();
@@ -167,15 +137,6 @@ int main() {
             uart_send_string("\n\r");
             uart_send_string("free_list: ");
             print_free_list();
-        }
-        else if(strcmp(input_buffer, "memstat") == 0) {
-            uart_send_string("\n\rMemory Allocation Status:\n\r");
-            uart_send_string("Free Array:\n\r");
-            print_free_array();
-            uart_send_string("\n\rFree List:\n\r");
-            print_free_list();
-            uart_send_string("\n\rSlab Pools:\n\r");
-            print_pools();
         }
         else {
             uart_send_string("\n\rInvalid command\n\r");
